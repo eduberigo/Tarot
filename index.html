@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mesa de Tarô Rider-Waite</title>
+<meta name="theme-color" content="#17141f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Noto+Sans+Symbols+2&display=swap" rel="stylesheet">
+<style>
+/* Mesa escura de leitura, cartas em papel envelhecido; o destaque é o dourado do baralho. Layout: uma coluna de etapas, a mesa é o centro. */
+:root{
+  --mesa:#17141f;
+  --mesa-2:#221d2d;
+  --mesa-3:#2d2639;
+  --linho:#efe5cf;
+  --tinta:#1d1a16;
+  --ouro:#c9a14d;
+  --ouro-2:#e3c47e;
+  --carmim:#b4434b;
+  --nevoa:#a99fb8;
+  --texto:#ece6f2;
+  --sim:#7fb08a;
+  --nao:#d07a7a;
+  --talvez:#c9b26a;
+  --f-display:"IM Fell English SC","IM Fell English",Georgia,"Times New Roman",serif;
+  --f-titulo:"IM Fell English",Georgia,serif;
+  --f-corpo:"Alegreya Sans","Segoe UI",Roboto,system-ui,sans-serif;
+  --f-simb:"Noto Sans Symbols 2","Segoe UI Symbol","DejaVu Sans",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--mesa);color:var(--texto);font-family:var(--f-corpo);font-size:17px;line-height:1.5;
+  background-image:radial-gradient(ellipse at 50% -10%,rgba(201,161,77,.10),transparent 55%),radial-gradient(ellipse at 50% 120%,rgba(120,80,160,.10),transparent 60%);
+  background-attachment:fixed;min-height:100%}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 80px}
+header.topo{display:grid;gap:4px;padding:8px 0 18px;border-bottom:1px solid rgba(201,161,77,.25);margin-bottom:18px}
+header.topo h1{font-family:var(--f-display);font-weight:400;font-size:clamp(30px,8vw,46px);line-height:1;margin:0;color:var(--ouro-2);letter-spacing:.02em;text-wrap:balance}
+header.topo p{margin:0;color:var(--nevoa);font-style:italic;font-family:var(--f-titulo);font-size:16px}
+section.etapa{background:var(--mesa-2);border:1px solid rgba(201,161,77,.18);border-radius:14px;padding:16px;margin:0 0 14px;display:grid;gap:12px}
+section.etapa>h2{margin:0;display:flex;gap:10px;align-items:baseline;font-family:var(--f-display);font-weight:400;font-size:22px;color:var(--ouro-2)}
+section.etapa>h2 .n{font-family:var(--f-titulo);font-style:italic;color:var(--ouro);font-size:16px;min-width:1.6em}
+section.etapa>h2 .ok{margin-left:auto;font-family:var(--f-corpo);font-size:13px;color:var(--sim);letter-spacing:.02em}
+.nota{color:var(--nevoa);font-size:14.5px;margin:0;max-width:65ch}
+.nota b{color:var(--texto);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+button,select,input,textarea{font:inherit;color:inherit}
+.chip{background:var(--mesa-3);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:7px 13px;font-size:15px;cursor:pointer;display:inline-flex;gap:6px;align-items:baseline}
+.chip small{color:var(--nevoa);font-size:12.5px}
+.chip[aria-pressed="true"]{background:rgba(201,161,77,.18);border-color:var(--ouro);color:var(--ouro-2)}
+.btn{background:var(--mesa-3);border:1px solid rgba(201,161,77,.35);border-radius:10px;padding:10px 14px;cursor:pointer;font-size:15.5px;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.btn.forte{background:var(--ouro);color:var(--tinta);border-color:var(--ouro);font-weight:700}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn .cont{font-variant-numeric:tabular-nums;color:var(--nevoa);font-size:13px}
+.btn.forte .cont{color:var(--tinta)}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,.carta:focus-visible{outline:2px solid var(--ouro-2);outline-offset:2px}
+.linha{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.grade-btn{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+label.campo{display:grid;gap:6px;font-size:14px;color:var(--nevoa)}
+input[type=text],textarea,select{background:var(--mesa);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 12px;color:var(--texto);width:100%}
+textarea{min-height:120px;resize:vertical;font-size:14px;line-height:1.45}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--mesa);border-radius:10px;padding:3px;gap:3px;border:1px solid rgba(255,255,255,.08)}
+.seg button{background:none;border:0;border-radius:8px;padding:8px 4px;font-size:14px;cursor:pointer;color:var(--nevoa)}
+.seg button[aria-pressed="true"]{background:var(--mesa-3);color:var(--ouro-2)}
+.toggle{display:flex;gap:10px;align-items:flex-start;font-size:15px;cursor:pointer}
+.toggle input{width:20px;height:20px;accent-color:var(--ouro);margin-top:2px;flex:none}
+.toggle span small{display:block;color:var(--nevoa);font-size:13px}
+.maco-vis{display:flex;gap:16px;align-items:center}
+.pilha{position:relative;width:74px;height:126px;flex:none}
+.pilha .verso{position:absolute;inset:0;border-radius:7px}
+.pilha.mexe{animation:mexe .5s ease}
+@keyframes mexe{0%{transform:none}25%{transform:translateX(-6px) rotate(-3deg)}50%{transform:translateX(6px) rotate(3deg)}75%{transform:translateX(-3px) rotate(-1deg)}100%{transform:none}}
+.registro{font-size:13.5px;color:var(--nevoa);display:grid;gap:2px;max-height:92px;overflow:auto}
+.registro div{font-variant-numeric:tabular-nums}
+.selo{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--nevoa)}
+.selo.alerta{background:rgba(180,67,75,.18);color:#f0b1b5}
+.selo.bom{background:rgba(127,176,138,.16);color:#b8dcc0}
+/* carta */
+.verso{background:
+   radial-gradient(circle at 50% 50%,rgba(227,196,126,.9) 0 5%,transparent 6%),
+   radial-gradient(circle at 50% 50%,transparent 0 17%,rgba(201,161,77,.65) 18% 19%,transparent 20%),
+   repeating-linear-gradient(45deg,rgba(201,161,77,.28) 0 1px,transparent 1px 9px),
+   repeating-linear-gradient(-45deg,rgba(201,161,77,.28) 0 1px,transparent 1px 9px),
+   linear-gradient(160deg,#2b2350,#1b1734);
+  border:2px solid #d9bd7c;box-shadow:inset 0 0 0 3px #1b1734,inset 0 0 0 4px rgba(201,161,77,.6),0 2px 6px rgba(0,0,0,.45)}
+.carta{position:relative;width:var(--cw,88px);aspect-ratio:7/12;perspective:800px;cursor:pointer;background:none;border:0;padding:0;border-radius:7px}
+.carta .gira{position:absolute;inset:0;transition:transform .6s cubic-bezier(.3,.7,.3,1);transform-style:preserve-3d}
+.carta.aberta .gira{transform:rotateY(180deg)}
+.carta .lado{position:absolute;inset:0;border-radius:7px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+.carta .frente{transform:rotateY(180deg);background:var(--linho);box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.carta .frente svg{width:100%;height:100%;display:block}
+.carta.inv .frente svg{transform:rotate(180deg)}
+.carta.cruza{transform:rotate(90deg);z-index:2}
+@media (prefers-reduced-motion:reduce){.carta .gira{transition:none}.pilha.mexe{animation:none}}
+/* mesa */
+.mesa-wrap{background:radial-gradient(ellipse at center,#2a2236 0%,#1c1826 80%);border-radius:12px;padding:16px 8px;overflow-x:auto}
+.mesa{display:grid;gap:10px 10px;justify-content:center;align-items:start;margin:0 auto}
+.slot{display:grid;justify-items:center;gap:4px;grid-row:var(--r);grid-column:var(--c)}
+.slot .rot{font-size:11.5px;color:var(--nevoa);text-align:center;line-height:1.2;max-width:calc(var(--cw) + 16px)}
+.slot .rot b{color:var(--ouro);font-weight:500;font-variant-numeric:tabular-nums}
+.slot.cruza{z-index:2;align-self:start}
+.slot.cruza .rot{display:none}
+.vazio{width:var(--cw);aspect-ratio:7/12;border:1px dashed rgba(201,161,77,.35);border-radius:7px}
+/* corte */
+.montes{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.monte{display:grid;gap:6px;justify-items:center;background:none;border:0;cursor:pointer;padding:6px;border-radius:10px;color:var(--texto)}
+.monte .pilha{width:64px;height:110px}
+.monte .ordem{font-family:var(--f-display);font-size:20px;color:var(--ouro-2);min-height:26px}
+.monte[disabled]{cursor:default}
+.monte small{color:var(--nevoa);font-size:12.5px}
+.fundo-mini{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.fundo-mini figure{margin:0;display:grid;gap:4px;justify-items:center;font-size:12px;color:var(--nevoa);text-align:center;max-width:90px}
+.fundo-mini .carta{--cw:58px;cursor:default}
+input[type=range]{width:100%;accent-color:var(--ouro)}
+/* leque */
+.leque{display:flex;overflow-x:auto;padding:10px 4px 16px;scroll-snap-type:x proximity}
+.leque button{flex:none;width:44px;height:76px;margin-right:-22px;border-radius:5px;cursor:pointer;padding:0;transition:transform .15s;scroll-snap-align:start}
+.leque button:hover,.leque button:focus-visible{transform:translateY(-8px)}
+/* leitura */
+.veredito{display:grid;gap:4px;padding:14px;border-radius:12px;background:var(--mesa);border:1px solid rgba(255,255,255,.08)}
+.veredito .grande{font-family:var(--f-display);font-size:34px;line-height:1}
+.veredito.sim .grande{color:var(--sim)}.veredito.nao .grande{color:var(--nao)}.veredito.talvez .grande{color:var(--talvez)}
+.itens{display:grid;gap:10px}
+.item{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:12px;border-radius:12px;background:var(--mesa);border:1px solid rgba(255,255,255,.06)}
+.item .carta{--cw:54px;cursor:default}
+.item h3{margin:0;font-family:var(--f-titulo);font-weight:400;font-size:18px;line-height:1.25;color:var(--texto)}
+.item .pos{font-size:12.5px;color:var(--ouro);letter-spacing:.04em;text-transform:uppercase}
+.item p{margin:4px 0 0;font-size:15px}
+.item .desc-pos{color:var(--nevoa);font-size:13.5px}
+.tag{display:inline-block;font-size:12px;padding:1px 7px;border-radius:999px;margin-left:4px;vertical-align:2px}
+.tag.inv{background:rgba(180,67,75,.22);color:#f0b1b5}
+.tag.dir{background:rgba(127,176,138,.15);color:#b8dcc0}
+.tag.yn-S{background:rgba(127,176,138,.15);color:#b8dcc0}.tag.yn-N{background:rgba(208,122,122,.18);color:#f0b1b5}.tag.yn-T{background:rgba(201,178,106,.18);color:#e8d9a6}
+.fatos{display:grid;gap:4px;font-size:14.5px;padding:12px;border-radius:12px;background:var(--mesa);border:1px solid rgba(255,255,255,.06)}
+.fatos h3{margin:0 0 4px;font-family:var(--f-display);font-weight:400;font-size:17px;color:var(--ouro-2)}
+.ia{display:grid;gap:12px;padding:14px;border-radius:12px;background:var(--mesa);border:1px solid rgba(201,161,77,.25)}
+.ia h3{margin:0;font-family:var(--f-display);font-weight:400;font-size:19px;color:var(--ouro-2)}
+.ia details{border-top:1px solid rgba(255,255,255,.08);padding-top:10px}
+.ia summary{cursor:pointer;font-weight:500}
+.saida{white-space:pre-wrap;font-size:15px;background:var(--mesa-2);border-radius:10px;padding:12px;min-height:3em;max-height:420px;overflow:auto}
+.saida:empty{display:none}
+ol.passos{margin:0;padding-left:1.2em;font-size:14.5px;color:var(--nevoa);display:grid;gap:2px}
+.diario{display:grid;gap:8px}
+.diario details{background:var(--mesa);border-radius:10px;padding:10px 12px;border:1px solid rgba(255,255,255,.06)}
+.diario summary{cursor:pointer;font-size:15px}
+.diario summary small{color:var(--nevoa);display:block;font-size:12.5px}
+.diario ul{margin:8px 0;padding-left:1.1em;font-size:14px}
+.vazio-txt{color:var(--nevoa);font-size:14.5px;font-style:italic;margin:0}
+footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;font-style:italic;font-family:var(--f-titulo)}
+.oculto{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topo">
+    <h1>Mesa de Tarô</h1>
+    <p>Rider-Waite · 78 arcanos · embaralhar, cortar e tirar como na mesa</p>
+  </header>
+
+  <section class="etapa" id="s-jogo">
+    <h2><span class="n">I</span>Jogo e pergunta</h2>
+    <div class="chips" id="lista-jogos" role="group" aria-label="Tipo de jogo"></div>
+    <p class="nota" id="desc-jogo"></p>
+    <label class="campo" for="pergunta">Pergunta ou tema (opcional, mas melhora a leitura)
+      <input type="text" id="pergunta" maxlength="240" placeholder="Ex.: Devo aceitar a proposta de contrato em março?">
+    </label>
+    <div class="campo" style="display:grid;gap:6px">
+      <span style="font-size:14px;color:var(--nevoa)">Cartas invertidas</span>
+      <div class="seg" role="group" aria-label="Modo das invertidas" id="seg-inv">
+        <button type="button" data-inv="real" id="inv-real">Como na mesa</button>
+        <button type="button" data-inv="carta" id="inv-carta">Sorteio por carta</button>
+        <button type="button" data-inv="off" id="inv-off">Sem invertidas</button>
+      </div>
+      <p class="nota" id="desc-inv"></p>
+      <label class="campo oculto" id="campo-prob" for="prob">Chance de cada carta sair invertida
+        <select id="prob">
+          <option value="0.25">25% (1 em 4)</option>
+          <option value="0.333">33% (1 em 3)</option>
+          <option value="0.5" selected>50% (moeda)</option>
+        </select>
+      </label>
+    </div>
+    <label class="toggle" for="opt-salto"><input type="checkbox" id="opt-salto">
+      <span>Considerar cartas que saltam ao embaralhar<small>Algumas escolas leem a carta que “pula” do maço como recado extra. Fica fora da tiragem principal.</small></span></label>
+    <label class="toggle" for="opt-fundo"><input type="checkbox" id="opt-fundo">
+      <span>Mostrar a carta do fundo do maço<small>Depois de tirar, a última carta do maço é lida por algumas escolas como raiz ou pano de fundo.</small></span></label>
+  </section>
+
+  <section class="etapa" id="s-maco">
+    <h2><span class="n">II</span>Embaralhar <span class="ok" id="ok-maco"></span></h2>
+    <div class="maco-vis">
+      <div class="pilha" id="pilha" aria-hidden="true"></div>
+      <div style="display:grid;gap:6px">
+        <div class="linha"><span class="selo" id="selo-cartas"></span><span class="selo" id="selo-estado"></span></div>
+        <div class="registro" id="registro" aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="grade-btn">
+      <button class="btn" type="button" data-emb="overhand" id="b-overhand">Por cima da mão <span class="cont" id="c-overhand">0×</span></button>
+      <button class="btn" type="button" data-emb="riffle" id="b-riffle">Intercalar (riffle) <span class="cont" id="c-riffle">0×</span></button>
+      <button class="btn" type="button" data-emb="mesa" id="b-mesa">Espalhar na mesa <span class="cont" id="c-mesa">0×</span></button>
+    </div>
+    <p class="nota" id="dica-emb"></p>
+    <div id="saltos" class="oculto" style="display:grid;gap:6px">
+      <span class="nota"><b>Saltaram do maço:</b></span>
+      <div class="fundo-mini" id="saltos-lista"></div>
+    </div>
+    <div class="linha"><button class="btn" type="button" id="b-novo">Maço novo, em ordem</button></div>
+  </section>
+
+  <section class="etapa" id="s-corte">
+    <h2><span class="n">III</span>Cortar <span class="ok" id="ok-corte"></span></h2>
+    <div class="seg" role="group" aria-label="Técnica de corte" style="grid-template-columns:repeat(2,1fr)">
+      <button type="button" data-corte="tres" id="corte-tres">Três montes</button>
+      <button type="button" data-corte="unico" id="corte-unico">Corte único</button>
+    </div>
+    <div id="painel-tres" style="display:grid;gap:10px">
+      <p class="nota">Tradição: com a <b>mão esquerda</b>, pensando na pergunta, divida o maço em três montes para a esquerda e reúna-os numa ordem diferente. Toque nos montes na ordem em que quer reuni-los: o primeiro tocado fica por cima.</p>
+      <div class="linha"><button class="btn" type="button" id="b-dividir">Dividir em três montes</button></div>
+      <div class="montes" id="montes"></div>
+      <label class="toggle oculto" for="opt-base" id="lab-base"><input type="checkbox" id="opt-base"><span>Ver a carta de baixo de cada monte<small>Algumas escolas leem essas três como contexto da pergunta.</small></span></label>
+      <div class="fundo-mini" id="bases"></div>
+    </div>
+    <div id="painel-unico" class="oculto" style="display:grid;gap:10px">
+      <p class="nota">Um corte com a mão esquerda: o consulente levanta parte do maço e coloca a parte de baixo por cima. Escolha onde cortar ou deixe ao acaso.</p>
+      <label class="campo" for="ponto">Cortar depois da carta <b id="ponto-val" style="color:var(--ouro-2)">39</b> (de cima para baixo)
+        <input type="range" id="ponto" min="6" max="72" value="39">
+      </label>
+      <div class="linha">
+        <button class="btn" type="button" id="b-cortar">Cortar neste ponto</button>
+        <button class="btn" type="button" id="b-cortar-acaso">Cortar ao acaso</button>
+      </div>
+      <div class="fundo-mini" id="carta-corte"></div>
+    </div>
+    <p class="nota" id="status-corte"></p>
+  </section>
+
+  <section class="etapa" id="s-tirar">
+    <h2><span class="n">IV</span>Tirar as cartas <span class="ok" id="ok-tirar"></span></h2>
+    <div class="seg" role="group" aria-label="Como tirar" style="grid-template-columns:repeat(2,1fr)">
+      <button type="button" data-tirar="topo" id="tirar-topo">Do topo, em ordem</button>
+      <button type="button" data-tirar="leque" id="tirar-leque">Escolher no leque</button>
+    </div>
+    <p class="nota" id="desc-tirar"></p>
+    <div id="painel-topo" class="linha"><button class="btn forte" type="button" id="b-distribuir">Distribuir</button></div>
+    <div id="painel-leque" class="oculto">
+      <p class="nota" id="leque-status"></p>
+      <div class="leque" id="leque" role="group" aria-label="Maço aberto em leque, cartas viradas para baixo"></div>
+    </div>
+    <div class="mesa-wrap" id="mesa-wrap"><div class="mesa" id="mesa"></div></div>
+    <div class="linha">
+      <button class="btn" type="button" id="b-revelar">Revelar todas</button>
+      <span class="nota" id="dica-mesa">Toque numa carta para virá-la.</span>
+    </div>
+  </section>
+
+  <section class="etapa" id="s-leitura">
+    <h2><span class="n">V</span>Leitura</h2>
+    <p class="vazio-txt" id="leitura-vazia">As cartas aparecem aqui depois de reveladas.</p>
+    <div id="leitura" class="oculto" style="display:grid;gap:12px">
+      <div id="veredito"></div>
+      <div class="itens" id="itens"></div>
+      <div class="fatos" id="fatos"></div>
+      <div class="ia" id="ia">
+        <h3>Interpretar com IA</h3>
+        <p class="nota">O prompt abaixo já leva pergunta, posições, cartas, orientação e as regras de leitura calibrada.</p>
+        <textarea id="prompt" readonly aria-label="Prompt da leitura"></textarea>
+        <div class="linha">
+          <button class="btn forte" type="button" id="b-copiar">Copiar prompt</button>
+          <span class="nota" id="copiado" aria-live="polite"></span>
+        </div>
+        <details open>
+          <summary>Gemma offline no celular (recomendado)</summary>
+          <ol class="passos">
+            <li>Instale o <b>Google AI Edge Gallery</b> pela Play Store.</li>
+            <li>Baixe o modelo <b>Gemma 4 E4B</b> (ou E2B, mais leve) com internet, uma vez.</li>
+            <li>Abra <b>AI Chat</b>, cole o prompt e envie. Funciona em modo avião.</li>
+          </ol>
+        </details>
+        <details>
+          <summary>Gemma dentro desta página (experimental)</summary>
+          <div style="display:grid;gap:8px;margin-top:8px">
+            <p class="nota">Roda o modelo no navegador via WebGPU, a partir de um arquivo de modelo já salvo no aparelho (formato web <b>.litertlm</b> ou <b>.task</b>, ex.: Gemma 3n E2B Web, ~3 GB). Na primeira vez precisa de internet para baixar o motor (cerca de 26 MB); depois ele fica guardado no aparelho.</p>
+            <label class="campo" for="arq-modelo">Arquivo do modelo
+              <input type="file" id="arq-modelo" accept=".litertlm,.task,.bin">
+            </label>
+            <label class="toggle" for="opt-tpl"><input type="checkbox" id="opt-tpl" checked><span>Aplicar formato de conversa do Gemma<small>Necessário para Gemma 3 e 3n. Desmarque se o modelo devolver texto estranho.</small></span></label>
+            <div class="linha">
+              <button class="btn" type="button" id="b-gemma-carregar">Carregar modelo</button>
+              <button class="btn" type="button" id="b-gemma-ler" disabled>Interpretar com Gemma</button>
+            </div>
+            <p class="nota" id="gemma-status" aria-live="polite"></p>
+            <div class="saida" id="gemma-saida"></div>
+          </div>
+        </details>
+      </div>
+      <div class="linha">
+        <button class="btn forte" type="button" id="b-salvar">Salvar no diário</button>
+        <button class="btn" type="button" id="b-recolher">Nova leitura (recolher cartas)</button>
+        <span class="nota" id="salvo" aria-live="polite"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="etapa" id="s-diario">
+    <h2><span class="n">VI</span>Diário de leituras</h2>
+    <p class="nota" id="diario-onde"></p>
+    <div class="diario" id="diario"></div>
+  </section>
+
+  <footer>Significados-base: A. E. Waite, <i>The Pictorial Key to the Tarot</i> (1910), em palavras-chave resumidas. Aleatoriedade: gerador criptográfico do navegador.</footer>
+</div>
+
+<script>
+"use strict";
+/* ---------- aleatoriedade ---------- */
+function u32(){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0];}
+function randInt(n){if(n<=1)return 0;const lim=Math.floor(4294967296/n)*n;let x;do{x=u32();}while(x>=lim);return x%n;}
+function rand(){return u32()/4294967296;}
+function binomial(n,p){let k=0;for(let i=0;i<n;i++)if(rand()<p)k++;return k;}
+
+/* ---------- baralho ---------- */
+const ROMANOS=["0","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX","XXI"];
+const VS="︎";
+// [nome, glifo, atribuição (Golden Dawn), direita, invertida, sim/não]
+const MAIORES=[
+["O Louco","ar","Ar","início, salto de fé, espontaneidade, liberdade","imprudência, hesitação, risco mal calculado","S"],
+["O Mago","☿","Mercúrio","iniciativa, habilidade, recursos à mão, força de vontade","manipulação, talento mal usado, bloqueio para agir","S"],
+["A Sacerdotisa","☽","Lua","intuição, silêncio, conhecimento oculto, espera","segredos, intuição desligada, informação retida","T"],
+["A Imperatriz","♀","Vênus","fertilidade, abundância, cuidado, criação","estagnação criativa, dependência, zelo excessivo","S"],
+["O Imperador","♈","Áries","estrutura, autoridade, ordem, estabilidade","rigidez, controle excessivo, autoridade abalada","S"],
+["O Hierofante","♉","Touro","tradição, instituições, ensino, conformidade","quebra de convenções, dogma questionado, caminho próprio","S"],
+["Os Enamorados","♊","Gêmeos","união, escolha, valores alinhados, parceria","desarmonia, escolha adiada, valores em conflito","S"],
+["O Carro","♋","Câncer","determinação, vitória, direção, autocontrole","falta de direção, forças opostas, perda de controle","S"],
+["A Força","♌","Leão","coragem, domínio de si, paciência, compaixão","insegurança, impulso descontrolado, desgaste","S"],
+["O Eremita","♍","Virgem","introspecção, busca interior, prudência, orientação","isolamento, retraimento excessivo, recusa de conselho","T"],
+["A Roda da Fortuna","♃","Júpiter","ciclos, mudança, sorte, virada","revés, resistência à mudança, ciclo desfavorável","S"],
+["A Justiça","♎","Libra","equilíbrio, verdade, causa e efeito, decisão justa","injustiça, parcialidade, fuga da responsabilidade","T"],
+["O Enforcado","agua","Água","pausa, rendição, nova perspectiva, sacrifício","estagnação, sacrifício inútil, indecisão","T"],
+["A Morte","♏","Escorpião","fim de ciclo, transformação, transição","resistência ao fim, mudança arrastada","N"],
+["A Temperança","♐","Sagitário","moderação, equilíbrio, paciência, síntese","excesso, desequilíbrio, pressa","S"],
+["O Diabo","♑","Capricórnio","apego, compulsão, materialismo, amarras","libertação, rompimento de vínculo, consciência do vício","N"],
+["A Torre","♂","Marte","ruptura súbita, revelação, colapso de estruturas","crise adiada, medo da mudança, abalo interno","N"],
+["A Estrela","♒","Aquário","esperança, renovação, inspiração, serenidade","desânimo, falta de fé, desconexão","S"],
+["A Lua","♓","Peixes","ilusão, incerteza, medo, inconsciente","confusão se dissipando, esclarecimento gradual","T"],
+["O Sol","☉","Sol","sucesso, clareza, vitalidade, alegria","otimismo excessivo, sucesso adiado, brilho parcial","S"],
+["O Julgamento","fogo","Fogo","despertar, chamado, avaliação, renascimento","autocrítica dura, dúvida, chamado ignorado","S"],
+["O Mundo","♄","Saturno","conclusão, integração, realização, plenitude","pendência, ciclo incompleto, falta de fechamento","S"]
+];
+const NAIPES=[
+ {k:"paus",nome:"Paus",el:"Fogo",tema:"ação, energia, projetos",cor:"#b5532d"},
+ {k:"copas",nome:"Copas",el:"Água",tema:"emoções, vínculos, afeto",cor:"#3f6f93"},
+ {k:"espadas",nome:"Espadas",el:"Ar",tema:"pensamento, conflito, decisões",cor:"#68758a"},
+ {k:"ouros",nome:"Ouros",el:"Terra",tema:"dinheiro, trabalho, corpo, matéria",cor:"#b08a2b"}
+];
+const RANKS=["Ás","2","3","4","5","6","7","8","9","10","Valete","Cavaleiro","Rainha","Rei"];
+// [direita, invertida, sim/não] por naipe, na ordem de RANKS
+const MENORES={
+paus:[
+["inspiração, novo projeto, energia criativa","atraso, falta de motivação, falso começo","S"],
+["planejamento, decisão, visão de futuro","medo do desconhecido, planejamento falho","T"],
+["expansão, perspectiva, resultados a caminho","obstáculos, atrasos, frustração com prazos","S"],
+["celebração, harmonia, lar, marco alcançado","transição instável, falta de apoio","S"],
+["conflito, competição, divergências","evitar conflito, trégua, tensão interna","N"],
+["vitória, reconhecimento público, progresso","falta de reconhecimento, queda, ego ferido","S"],
+["defesa, perseverança, manter posição","exaustão, desistência, sobrecarga","T"],
+["movimento rápido, notícias, ação","atrasos, frustração, pressa mal dirigida","S"],
+["resiliência, persistência, última prova","cansaço, desconfiança, rigidez defensiva","T"],
+["sobrecarga, responsabilidade, fardo","delegar, soltar o peso, esgotamento","N"],
+["entusiasmo, exploração, mensagem","ideias sem rumo, imaturidade, notícia atrasada","S"],
+["ação, aventura, impulsividade","pressa, imprudência, frustração","S"],
+["confiança, carisma, determinação","insegurança, ciúme, autoritarismo","S"],
+["liderança, visão, empreendedorismo","impulsividade, expectativa alta demais, prepotência","S"]],
+copas:[
+["amor novo, emoção aberta, intuição","emoções reprimidas, vazio, bloqueio afetivo","S"],
+["parceria, atração mútua, união","desequilíbrio na relação, rompimento, desencontro","S"],
+["amizade, celebração, comunidade","excessos, fofoca, isolamento social","S"],
+["apatia, contemplação, oportunidade ignorada","retomada de interesse, aceitação","T"],
+["perda, arrependimento, luto","aceitação, seguir em frente, perdão","N"],
+["nostalgia, memórias, reencontro","preso ao passado, idealização","S"],
+["fantasia, muitas opções, ilusão","clareza, escolha feita, foco","T"],
+["partida, desapego, busca de sentido","medo de partir, ficar por inércia","N"],
+["satisfação, desejo realizado","insatisfação, desejo frustrado","S"],
+["harmonia familiar, plenitude afetiva","conflito familiar, valores desalinhados","S"],
+["mensagem afetiva, sensibilidade, curiosidade","imaturidade emocional, bloqueio criativo","S"],
+["romance, proposta, charme","humor instável, promessas vazias","S"],
+["empatia, acolhimento, intuição","dependência emocional, insegurança","S"],
+["equilíbrio emocional, diplomacia","manipulação emocional, frieza, instabilidade","S"]],
+espadas:[
+["clareza, verdade, ideia decisiva","confusão, informação errada, brutalidade","S"],
+["impasse, decisão difícil, bloqueio","indecisão exposta, excesso de informação, alívio","T"],
+["dor, mágoa, separação","recuperação, perdão, liberar a dor","N"],
+["descanso, recuperação, pausa","esgotamento, inquietação, volta à ativa","T"],
+["conflito, vitória a qualquer custo, derrota","reconciliação, arrependimento, encerrar disputa","N"],
+["transição, afastamento, travessia","resistência à mudança, assunto pendente","T"],
+["estratégia, astúcia, engano","confissão, consciência pesada, ser descoberto","N"],
+["restrição, sentir-se preso, autolimitação","libertação, nova perspectiva, aceitar ajuda","N"],
+["ansiedade, preocupação, insônia","alívio, encarar o medo, esperança","N"],
+["fim doloroso, colapso, fundo do poço","recuperação, o pior já passou","N"],
+["curiosidade, vigilância, ideias novas","fofoca, palavras impensadas, desconfiança","T"],
+["ação rápida, ambição, franqueza","impulsividade, agressividade verbal, falta de plano","T"],
+["clareza, independência, juízo imparcial","frieza, amargura, crítica excessiva","T"],
+["autoridade intelectual, verdade, ética","abuso de poder, manipulação, crueldade","T"]],
+ouros:[
+["oportunidade material, prosperidade, começo financeiro","oportunidade perdida, má gestão","S"],
+["equilíbrio, adaptação, prioridades","desorganização, sobrecarga financeira","T"],
+["trabalho em equipe, competência, colaboração","falta de cooperação, qualidade baixa","S"],
+["segurança, conservação, controle","avareza, apego material, medo de perder","T"],
+["dificuldade financeira, exclusão, carência","recuperação, ajuda chegando, superação","N"],
+["generosidade, troca, dar e receber","dívida, desigualdade, ajuda com condições","S"],
+["paciência, investimento de longo prazo, avaliação","impaciência, retorno baixo, esforço mal aplicado","T"],
+["dedicação, aprendizado, ofício","perfeccionismo, falta de foco, trabalho repetitivo","S"],
+["independência, conforto, autossuficiência","dependência financeira, gastos excessivos","S"],
+["riqueza duradoura, família, legado","perda financeira, conflito por herança","S"],
+["estudo, oportunidade concreta, planejamento","procrastinação, falta de progresso","S"],
+["constância, método, rotina","tédio, estagnação, teimosia","S"],
+["cuidado prático, prosperidade, segurança","desequilíbrio entre trabalho e casa, preocupação material","S"],
+["riqueza, estabilidade, gestão sólida","materialismo, rigidez, controle financeiro excessivo","S"]]
+};
+const CARTAS=[];
+MAIORES.forEach((m,i)=>CARTAS.push({id:i,nome:m[0],maior:true,num:i,glifo:m[1],attr:m[2],dir:m[3],inv:m[4],yn:m[5]}));
+NAIPES.forEach(n=>{RANKS.forEach((r,j)=>{const d=MENORES[n.k][j];
+  const nome=(r==="Ás"?"Ás":r)+" de "+n.nome;
+  CARTAS.push({id:CARTAS.length,nome,maior:false,naipe:n.k,rank:j+1,rankNome:r,dir:d[0],inv:d[1],yn:d[2]});});});
+
+/* ---------- jogos ---------- */
+const JOGOS=[
+ {k:"sn1",nome:"Sim ou Não",sub:"1 carta",cols:1,rows:1,sn:true,desc:"Uma carta responde. Convenção usada: cada carta tem tendência Sim, Não ou Talvez; invertida, um Sim vira Não.",pos:[["Resposta","tendência da resposta",1,1]]},
+ {k:"sn3",nome:"Sim ou Não",sub:"3 cartas",cols:3,rows:1,sn:true,desc:"Três cartas votam: Sim soma 1, Não subtrai 1, Talvez vale 0. O saldo decide; empate fica indefinido.",pos:[["Carta 1","primeiro voto",1,1],["Carta 2","segundo voto",2,1],["Carta 3","terceiro voto",3,1]]},
+ {k:"dia",nome:"Conselho do dia",sub:"1 carta",cols:1,rows:1,desc:"Uma carta como orientação para o dia: o tom a adotar e onde pôr atenção.",pos:[["Conselho do dia","a atitude que a carta sugere para hoje",1,1]]},
+ {k:"amor",nome:"Conselho amoroso",sub:"5 cartas",cols:3,rows:3,desc:"Para uma relação existente ou desejada. Sem uma pessoa específica, leia a posição 2 como “o que você busca”.",pos:[["Você","sua postura e o que traz para o vínculo",1,1],["A dinâmica","como a relação funciona hoje",2,1],["A outra pessoa","a postura dela ou o que você busca",3,1],["O que bloqueia","o principal obstáculo",2,2],["Conselho","a atitude recomendada",2,3]]},
+ {k:"aberto",nome:"Conselho aberto",sub:"3 cartas",cols:3,rows:1,desc:"Para qualquer tema: o quadro, o ponto de atrito e o caminho sugerido.",pos:[["Situação","o quadro atual",1,1],["Desafio","o ponto de atrito",2,1],["Conselho","a atitude recomendada",3,1]]},
+ {k:"ppf",nome:"Passado · Presente · Futuro",sub:"3 cartas",cols:3,rows:1,desc:"Linha do tempo do tema: de onde vem, onde está, para onde tende se nada mudar.",pos:[["Passado","de onde a situação vem",1,1],["Presente","o estado atual",2,1],["Futuro","tendência se o rumo se mantiver",3,1]]},
+ {k:"duas",nome:"Duas opções",sub:"5 cartas",cols:3,rows:3,desc:"Para escolher entre A e B. Defina na pergunta qual é a opção A e qual é a B antes de tirar.",pos:[["Momento atual","o contexto da escolha",2,3],["Opção A","como é seguir por A",1,2],["Resultado de A","tendência ao escolher A",1,1],["Opção B","como é seguir por B",3,2],["Resultado de B","tendência ao escolher B",3,1]]},
+ {k:"ferradura",nome:"Ferradura",sub:"7 cartas",cols:5,rows:3,desc:"Panorama de uma questão com influências ocultas e conselho.",pos:[["Passado","o que levou até aqui",1,1],["Presente","o estado atual",1,2],["Influências ocultas","o que não está à vista",2,3],["Obstáculo","o que atrapalha",3,3],["Ambiente","pessoas e circunstâncias em volta",4,3],["Conselho","a atitude recomendada",5,2],["Resultado provável","para onde tende",5,1]]},
+ {k:"celta",nome:"Cruz Celta",sub:"10 cartas",cols:4,rows:4,desc:"O método publicado por Waite em 1910. A carta 2 cruza a 1.",pos:[["Situação atual","o cerne da questão",2,2],["O que cruza","o obstáculo ou força que atravessa a situação",2,2,true],["Base","a raiz, o que está por baixo",2,3],["Passado recente","o que está saindo",1,2],["O que coroa","o objetivo ou o melhor possível",2,1],["Futuro próximo","o que está chegando",3,2],["Você","sua atitude diante da questão",4,4],["Ambiente","pessoas e circunstâncias em volta",4,3],["Esperanças e medos","o que você deseja ou teme",4,2],["Resultado provável","para onde tende",4,1]]}
+];
+
+/* ---------- estado ---------- */
+function novoMaco(){return CARTAS.map(c=>({id:c.id,rev:false}));}
+let S=null;
+function estadoInicial(){return{
+  jogo:"aberto",pergunta:"",inv:"real",prob:0.5,salto:false,fundo:false,
+  maco:novoMaco(),emb:{overhand:0,riffle:0,mesa:0},reg:["Maço novo, na ordem de fábrica, todas as cartas de pé."],saltos:[],
+  corteModo:"tres",montes:null,ordemMontes:[],corte:null,cartaCorte:null,verBase:false,
+  tirarModo:"topo",tiradas:[],rodada:1,salvo:false,bases:null
+};}
+
+/* ---------- embaralhamentos ---------- */
+function overhand(d){const src=d.slice();let out=[];while(src.length){const k=Math.min(src.length,1+randInt(8));out=src.splice(0,k).concat(out);}return out;}
+function girarPacote(p){return p.slice().reverse().map(x=>({id:x.id,rev:!x.rev}));}
+function riffle(d,girar){const c=binomial(d.length,.5);let L=d.slice(0,c),R=d.slice(c);if(girar)R=girarPacote(R);const out=[];while(L.length||R.length){if(randInt(L.length+R.length)<L.length)out.push(L.shift());else out.push(R.shift());}return out;}
+function espalhar(d,orientar){const a=d.map(x=>({id:x.id,rev:orientar?rand()<.5:x.rev}));for(let i=a.length-1;i>0;i--){const j=randInt(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function embaralhar(tipo){
+  if(S.tiradas.length){recolher(true);}
+  const real=S.inv==="real";let nota="";
+  if(tipo==="overhand"){S.maco=overhand(S.maco);nota="por cima da mão";}
+  if(tipo==="riffle"){const girar=real&&rand()<.5;S.maco=riffle(S.maco,girar);nota="intercalado"+(girar?", com uma metade girada":"");}
+  if(tipo==="mesa"){S.maco=espalhar(S.maco,real);nota="espalhado na mesa"+(real?", orientações misturadas":"");}
+  S.emb[tipo]++;
+  let salto="";
+  if(S.salto&&tipo!=="mesa"&&rand()<.06&&S.maco.length>40){const i=randInt(S.maco.length);const c=S.maco.splice(i,1)[0];S.saltos.push(c);salto=" — uma carta saltou";}
+  const total=S.emb.overhand+S.emb.riffle+S.emb.mesa;
+  S.reg.unshift(total+"º: "+nota+salto+".");S.reg=S.reg.slice(0,12);
+  S.corte=null;S.montes=null;S.ordemMontes=[];S.cartaCorte=null;
+  const p=$("pilha");p.classList.remove("mexe");void p.offsetWidth;p.classList.add("mexe");
+  render();
+}
+
+/* ---------- corte ---------- */
+function dividir(){
+  if(S.tiradas.length)recolher(true);
+  const n=S.maco.length,t=Math.round(n/3);
+  const a=t+randInt(7)-3,b=t+randInt(7)-3;
+  S.montes=[S.maco.slice(0,a),S.maco.slice(a,a+b),S.maco.slice(a+b)];
+  S.ordemMontes=[];S.corte=null;render();
+}
+function tocarMonte(i){
+  if(!S.montes||S.ordemMontes.includes(i))return;
+  S.ordemMontes.push(i);
+  if(S.ordemMontes.length===2){for(let k=0;k<3;k++)if(!S.ordemMontes.includes(k))S.ordemMontes.push(k);}
+  if(S.ordemMontes.length===3){
+    S.bases=S.montes.map(m=>m[m.length-1]);
+    S.maco=S.ordemMontes.flatMap(k=>S.montes[k]);
+    S.corte="Três montes, reunidos na ordem "+S.ordemMontes.map(k=>k+1).join("–")+".";
+    S.reg.unshift("Corte em três montes ("+S.ordemMontes.map(k=>k+1).join("–")+").");
+  }
+  render();
+}
+function cortarEm(c){
+  if(S.tiradas.length)recolher(true);
+  const n=S.maco.length;c=Math.max(1,Math.min(n-1,c));
+  const topo=S.maco.slice(0,c),baixo=S.maco.slice(c);
+  S.cartaCorte=topo[topo.length-1];
+  S.maco=baixo.concat(topo);
+  S.corte="Corte único depois da carta "+c+".";S.montes=null;S.ordemMontes=[];
+  S.reg.unshift("Corte único na carta "+c+".");render();
+}
+
+/* ---------- tirar ---------- */
+function jogo(){return JOGOS.find(j=>j.k===S.jogo);}
+function orientar(c){if(S.inv==="off")return false;if(S.inv==="carta")return rand()<S.prob;return c.rev;}
+function distribuir(){
+  const j=jogo();if(S.tiradas.length)return;
+  for(let i=0;i<j.pos.length;i++){const c=S.maco.shift();S.tiradas.push({id:c.id,rev:orientar(c),fis:c.rev,aberta:false});}
+  S.salvo=false;render();
+}
+function escolherLeque(idx){
+  const j=jogo();if(S.tiradas.length>=j.pos.length)return;
+  const c=S.maco.splice(idx,1)[0];S.tiradas.push({id:c.id,rev:orientar(c),fis:c.rev,aberta:false});S.salvo=false;render();
+}
+function recolher(silencioso){
+  // as cartas voltam por cima do maço, de pé ou não conforme estavam fisicamente
+  const volta=S.tiradas.map(t=>({id:t.id,rev:t.fis}));
+  const saltos=S.saltos.slice();
+  S.maco=volta.concat(saltos,S.maco);S.tiradas=[];S.saltos=[];
+  S.emb={overhand:0,riffle:0,mesa:0};S.corte=null;S.montes=null;S.ordemMontes=[];S.cartaCorte=null;S.bases=null;S.rodada++;S.salvo=false;
+  S.reg.unshift("Cartas recolhidas por cima do maço.");S.reg=S.reg.slice(0,12);
+  ["gemma-saida","claude-saida"].forEach(id=>{$(id).textContent="";});
+  if(!silencioso)render();
+}
+
+/* ---------- desenho das cartas ---------- */
+function esc(s){return String(s).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));}
+function emblema(naipe,cor){
+  const st='stroke="#1d1a16" stroke-width="1.3" stroke-linejoin="round"';
+  if(naipe==="copas")return `<g ${st} fill="${cor}"><path d="M-15 -19H15C15 -3 8 6 0 8C-8 6 -15 -3 -15 -19Z"/><rect x="-2.2" y="8" width="4.4" height="8"/><ellipse cx="0" cy="18" rx="10" ry="3.2"/></g>`;
+  if(naipe==="paus")return `<g ${st} fill="${cor}" transform="rotate(-22)"><rect x="-3.2" y="-23" width="6.4" height="46" rx="3"/><ellipse cx="-7" cy="-13" rx="4.5" ry="2.2" fill="#6d8f4e" transform="rotate(-30 -7 -13)"/><ellipse cx="7" cy="-4" rx="4.5" ry="2.2" fill="#6d8f4e" transform="rotate(30 7 -4)"/><ellipse cx="-7" cy="7" rx="4.5" ry="2.2" fill="#6d8f4e" transform="rotate(-30 -7 7)"/></g>`;
+  if(naipe==="espadas")return `<g ${st} fill="${cor}"><path d="M0 -25L4.2 -18L3 10H-3L-4.2 -18Z" fill="#d9dde3"/><rect x="-11" y="9.5" width="22" height="3.8" rx="1.6"/><rect x="-2.2" y="13.3" width="4.4" height="7.5"/><circle cx="0" cy="23" r="3.2"/></g>`;
+  let pts=[];for(let k=0;k<5;k++){const a=(-90+k*144)*Math.PI/180;pts.push((15*Math.cos(a)).toFixed(2)+" "+(15*Math.sin(a)).toFixed(2));}
+  return `<g ${st}><circle r="19" fill="${cor}"/><circle r="16.5" fill="none" stroke-width=".8"/><path d="M${pts.join("L")}Z" fill="none" stroke-width="1.4"/></g>`;
+}
+const PIPS={1:[[70,118]],2:[[70,78],[70,160]],3:[[70,66],[70,118],[70,170]],4:[[45,78],[95,78],[45,160],[95,160]],5:[[45,72],[95,72],[70,118],[45,164],[95,164]],
+6:[[45,66],[95,66],[45,118],[95,118],[45,170],[95,170]],7:[[45,66],[95,66],[70,92],[45,118],[95,118],[45,170],[95,170]],
+8:[[45,66],[95,66],[70,92],[45,118],[95,118],[70,144],[45,170],[95,170]],9:[[45,60],[95,60],[45,99],[95,99],[70,118],[45,138],[95,138],[45,177],[95,177]],
+10:[[45,60],[95,60],[70,80],[45,99],[95,99],[45,138],[95,138],[70,157],[45,177],[95,177]]};
+function triangulo(tipo){
+  if(tipo==="agua")return '<path d="M-26 -18H26L0 26Z" fill="none" stroke="#3f6f93" stroke-width="4" stroke-linejoin="round"/>';
+  const cor=tipo==="fogo"?"#b5532d":"#68758a";
+  return `<path d="M0 -26L26 18H-26Z" fill="none" stroke="${cor}" stroke-width="4" stroke-linejoin="round"/>`+(tipo==="ar"?`<path d="M-17 2H17" stroke="${cor}" stroke-width="4"/>`:"");
+}
+function svgCarta(id){
+  const c=CARTAS[id];
+  const nome=c.nome.toUpperCase();
+  const fs=Math.min(12.5,190/Math.max(8,nome.length));
+  let topo="",meio="",cor="#7a4a78";
+  if(c.maior){
+    topo=ROMANOS[c.num];
+    const g=["ar","agua","fogo"].includes(c.glifo)?`<g transform="translate(70 112)">${triangulo(c.glifo)}</g>`:`<text x="70" y="131" text-anchor="middle" font-size="54" font-family='"Noto Sans Symbols 2","Segoe UI Symbol",sans-serif' fill="#1d1a16">${c.glifo+VS}</text>`;
+    meio=`<circle cx="70" cy="114" r="40" fill="#f6eedb" stroke="#c9a14d" stroke-width="1.6"/><circle cx="70" cy="114" r="35" fill="none" stroke="#c9a14d" stroke-width=".6"/>${g}<text x="70" y="176" text-anchor="middle" font-size="11" font-style="italic" font-family='"IM Fell English",Georgia,serif' fill="#5a4c38">${esc(c.attr)}</text>`;
+  }else{
+    const n=NAIPES.find(x=>x.k===c.naipe);cor=n.cor;
+    if(c.rank<=10){
+      topo=c.rank===1?"ÁS":ROMANOS[c.rank];
+      const esc2=c.rank===1?1.9:c.rank<=3?1:c.rank<=6?.78:.62;
+      if(c.rank===1)meio+=`<g transform="translate(70 118)">${Array.from({length:12},(_,k)=>`<path d="M0 -44L2.5 -36H-2.5Z" fill="#c9a14d" transform="rotate(${k*30})"/>`).join("")}</g>`;
+      meio+=PIPS[c.rank].map(p=>`<g transform="translate(${p[0]} ${p[1]}) scale(${esc2})">${emblema(c.naipe,cor)}</g>`).join("");
+    }else{
+      topo="";
+      const fig={11:"♙",12:"♘",13:"♕",14:"♔"}[c.rank];
+      meio=`<text x="70" y="118" text-anchor="middle" font-size="62" font-family='"Noto Sans Symbols 2","Segoe UI Symbol",sans-serif' fill="#1d1a16">${fig+VS}</text><g transform="translate(70 158) scale(.85)">${emblema(c.naipe,cor)}</g>`;
+    }
+  }
+  return `<svg viewBox="0 0 140 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(c.nome)}">
+<rect x="0" y="0" width="140" height="240" fill="#efe5cf"/>
+<rect x="5" y="5" width="130" height="230" rx="4" fill="none" stroke="#1d1a16" stroke-width="2.2"/>
+<rect x="9" y="9" width="122" height="222" rx="2" fill="none" stroke="${cor}" stroke-width="1.1"/>
+<text x="70" y="31" text-anchor="middle" font-size="15" font-family='"IM Fell English SC","IM Fell English",Georgia,serif' fill="#1d1a16" letter-spacing="1">${esc(topo)}</text>
+${meio}
+<rect x="14" y="199" width="112" height="26" fill="${cor}" opacity=".16"/>
+<text x="70" y="216.5" text-anchor="middle" font-size="${fs.toFixed(1)}" font-family='"IM Fell English SC","IM Fell English",Georgia,serif' fill="#1d1a16" letter-spacing=".5">${esc(nome)}</text>
+</svg>`;
+}
+function htmlCarta(t,opts={}){
+  const cls=["carta"];if(t.aberta||opts.aberta)cls.push("aberta");if(t.rev)cls.push("inv");if(opts.cruza)cls.push("cruza");
+  const rotulo=(t.aberta||opts.aberta)?CARTAS[t.id].nome+(t.rev?", invertida":""):"Carta virada para baixo"+(opts.idx!=null?", toque para revelar":"");
+  const tag=opts.idx!=null?`button type="button" data-virar="${opts.idx}"`:'div';
+  const fecha=opts.idx!=null?"button":"div";
+  return `<${tag} class="${cls.join(" ")}" aria-label="${esc(rotulo)}"><div class="gira"><div class="lado verso"></div><div class="lado frente">${svgCarta(t.id)}</div></div></${fecha}>`;
+}
+
+/* ---------- leitura ---------- */
+const YN_TXT={S:"Sim",N:"Não",T:"Talvez"};
+function ynCarta(t){const b=CARTAS[t.id].yn;if(t.rev&&b==="S")return"N";return b;}
+function veredito(){
+  const j=jogo();if(!j.sn)return null;
+  const vs=S.tiradas.map(ynCarta);
+  if(j.k==="sn1")return{res:vs[0],det:"Carta única com tendência "+YN_TXT[vs[0]]+"."};
+  const saldo=vs.reduce((a,v)=>a+(v==="S"?1:v==="N"?-1:0),0);
+  const res=saldo>0?"S":saldo<0?"N":"T";
+  return{res,det:"Votos: "+vs.map(v=>YN_TXT[v]).join(", ")+" · saldo "+(saldo>0?"+":"")+saldo+"."};
+}
+function fatos(){
+  const ts=S.tiradas.map(t=>({t,c:CARTAS[t.id]}));
+  const n=ts.length,maiores=ts.filter(x=>x.c.maior).length,inv=ts.filter(x=>x.t.rev).length;
+  const por={};ts.filter(x=>!x.c.maior).forEach(x=>{por[x.c.naipe]=(por[x.c.naipe]||0)+1;});
+  const cortes=ts.filter(x=>!x.c.maior&&x.c.rank>10).length;
+  const nums={};ts.filter(x=>!x.c.maior&&x.c.rank<=10).forEach(x=>{nums[x.c.rank]=(nums[x.c.rank]||0)+1;});
+  const linhas=[];
+  linhas.push(`Arcanos maiores: <b>${maiores}</b> de ${n}${n>=3?(maiores/n>=.5?" — proporção alta; a tradição lê como tema de peso ou fora do controle imediato":maiores===0?" — nenhum; a tradição lê como questão do dia a dia, mais manejável":""):""}.`);
+  if(S.inv!=="off")linhas.push(`Invertidas: <b>${inv}</b> de ${n}.`);
+  const ns=NAIPES.filter(x=>por[x.k]).map(x=>`${x.nome} ${por[x.k]}`);
+  if(ns.length)linhas.push("Naipes: "+ns.join(" · ")+".");
+  if(n>=3){const dom=NAIPES.filter(x=>(por[x.k]||0)>=Math.max(2,Math.ceil(n*.4)));dom.forEach(x=>linhas.push(`Predomínio de ${x.nome} (${x.el}): ${x.tema}.`));}
+  if(cortes>=2)linhas.push(`Cartas da corte: <b>${cortes}</b> — costumam indicar pessoas envolvidas ou papéis que você assume.`);
+  Object.entries(nums).filter(([,v])=>v>=2).forEach(([k,v])=>linhas.push(`Número repetido: ${v}× o ${k==="1"?"Ás":k}.`));
+  return linhas;
+}
+function textoPrompt(){
+  const j=jogo();
+  const metodo={real:"como na mesa (invertidas surgem de metades giradas e da mistura na mesa)",carta:"sorteio independente por carta ("+Math.round(S.prob*100)+"%)",off:"sem invertidas"}[S.inv];
+  const L=[];
+  L.push("Você é um leitor de tarô Rider-Waite. Interprete a tiragem abaixo com rigor técnico.");
+  L.push("Regras:");
+  L.push("- Base: significados tradicionais de A. E. Waite (The Pictorial Key to the Tarot). Diga quando estiver indo além deles.");
+  L.push("- Leia carta por carta, sempre em função da posição.");
+  L.push("- Separe: significado tradicional / leitura provável na posição / hipóteses.");
+  L.push("- Evite frases genéricas que serviriam para qualquer pessoa, não force coerência entre as cartas e não use linguagem de elogio nem de alarme.");
+  L.push("- Se as cartas não dão uma resposta clara, diga isso.");
+  L.push("- Termine com um resumo de no máximo 5 linhas.");
+  L.push("");
+  L.push("Pergunta: "+(S.pergunta.trim()||"(sem pergunta específica)"));
+  L.push("Jogo: "+j.nome+" ("+j.sub+")");
+  L.push("Invertidas: "+metodo);
+  if(S.corte)L.push("Corte: "+S.corte);
+  L.push("");L.push("Cartas:");
+  S.tiradas.forEach((t,i)=>{const c=CARTAS[t.id],p=j.pos[i];
+    L.push(`${i+1}. ${p[0]} (${p[1]}) — ${c.nome}, ${t.rev?"invertida":"na posição direita"}. Palavras-chave tradicionais: ${t.rev?c.inv:c.dir}.`);});
+  const v=veredito();if(v){L.push("");L.push("Sim/Não pela convenção do app: "+YN_TXT[v.res]+". "+v.det+" Avalie se as cartas sustentam esse resultado.");}
+  if(S.fundo&&S.maco.length){const c=CARTAS[S.maco[S.maco.length-1].id];L.push("Carta do fundo do maço (contexto): "+c.nome+(S.maco[S.maco.length-1].rev&&S.inv==="real"?", invertida":"")+".");}
+  if(S.bases&&S.verBase)L.push("Cartas de baixo dos três montes do corte (contexto): "+S.bases.map(b=>CARTAS[b.id].nome).join("; ")+".");
+  if(S.saltos.length)L.push("Cartas que saltaram ao embaralhar (recado extra): "+S.saltos.map(b=>CARTAS[b.id].nome).join("; ")+".");
+  L.push("");L.push("Fatos da tiragem: "+fatos().map(x=>x.replace(/<[^>]+>/g,"")).join(" "));
+  return L.join("\n");
+}
+
+/* ---------- render ---------- */
+function $(id){return document.getElementById(id);}
+function medidaCarta(cols,fator){const w=Math.min(760,document.documentElement.clientWidth)-80;const g=fator?fator:0;const cw=g?Math.floor(w/(cols+g*(cols-1))):Math.floor((w-(cols-1)*10)/cols);return Math.max(46,Math.min(112,cw));}
+function render(){
+  const j=jogo();
+  // jogos
+  $("lista-jogos").innerHTML=JOGOS.map(x=>`<button type="button" class="chip" data-jogo="${x.k}" aria-pressed="${x.k===S.jogo}">${esc(x.nome)} <small>${esc(x.sub)}</small></button>`).join("");
+  $("desc-jogo").textContent=j.desc;
+  if($("pergunta").value!==S.pergunta)$("pergunta").value=S.pergunta;
+  document.querySelectorAll("[data-inv]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.inv===S.inv));
+  $("desc-inv").innerHTML={real:"Como num baralho físico: as cartas começam de pé e só se invertem quando uma metade é girada no riffle ou quando o maço é espalhado na mesa. A orientação acompanha a carta entre leituras.",carta:"Cada carta tirada tem a chance escolhida de sair invertida, independente das outras.",off:"Todas as cartas são lidas na posição direita."}[S.inv];
+  $("campo-prob").classList.toggle("oculto",S.inv!=="carta");
+  $("prob").value=String(S.prob);
+  $("opt-salto").checked=S.salto;$("opt-fundo").checked=S.fundo;
+  // maço
+  const tot=S.emb.overhand+S.emb.riffle+S.emb.mesa;
+  $("pilha").innerHTML=Array.from({length:Math.min(6,Math.max(1,Math.ceil(S.maco.length/13)))},(_,k)=>`<div class="verso" style="transform:translate(${k*1.5}px,${-k*1.5}px)"></div>`).join("");
+  $("selo-cartas").textContent=S.maco.length+" cartas no maço";
+  const est=$("selo-estado");
+  if(tot===0){est.textContent="ainda não embaralhado";est.className="selo alerta";}
+  else if(S.emb.riffle>=7||S.emb.mesa>=1){est.textContent="bem misturado";est.className="selo bom";}
+  else{est.textContent=tot+" embaralhada"+(tot>1?"s":"");est.className="selo";}
+  $("registro").innerHTML=S.reg.map(r=>`<div>${esc(r)}</div>`).join("");
+  ["overhand","riffle","mesa"].forEach(k=>{$("c-"+k).textContent=S.emb[k]+"×";});
+  $("dica-emb").innerHTML="Pela matemática do embaralhamento (Bayer e Diaconis, 1992), cerca de <b>7 riffles</b> deixam o maço bem misturado; o “por cima da mão” mistura bem menos por vez. Espalhar na mesa mistura tudo de uma vez.";
+  $("ok-maco").textContent=tot?"✓":"";
+  $("saltos").classList.toggle("oculto",!S.saltos.length);
+  $("saltos-lista").innerHTML=S.saltos.map(s=>`<figure>${htmlCarta({id:s.id,rev:S.inv==="real"&&s.rev,aberta:true})}<figcaption>${esc(CARTAS[s.id].nome)}</figcaption></figure>`).join("");
+  // corte
+  document.querySelectorAll("[data-corte]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.corte===S.corteModo));
+  $("painel-tres").classList.toggle("oculto",S.corteModo!=="tres");
+  $("painel-unico").classList.toggle("oculto",S.corteModo!=="unico");
+  if(S.montes){
+    $("montes").innerHTML=S.montes.map((m,i)=>{const ord=S.ordemMontes.indexOf(i);
+      return `<button type="button" class="monte" data-monte="${i}" ${ord>=0?"disabled":""} aria-label="Monte ${i+1}, ${m.length} cartas"><span class="ordem">${ord>=0?ROMANOS[ord+1]:""}</span><div class="pilha">${Array.from({length:Math.min(4,Math.ceil(m.length/7))},(_,k)=>`<div class="verso" style="transform:translate(${k*1.5}px,${-k*1.5}px)"></div>`).join("")}</div><small>Monte ${i+1} · ${m.length}</small></button>`;}).join("");
+  }else $("montes").innerHTML="";
+  const feitoTres=S.montes&&S.ordemMontes.length===3;
+  $("lab-base").classList.toggle("oculto",!feitoTres);
+  $("opt-base").checked=S.verBase;
+  $("bases").innerHTML=(feitoTres&&S.verBase&&S.bases)?S.bases.map((b,i)=>`<figure>${htmlCarta({id:b.id,rev:S.inv==="real"&&b.rev,aberta:true})}<figcaption>Base do monte ${i+1}<br>${esc(CARTAS[b.id].nome)}</figcaption></figure>`).join(""):"";
+  $("ponto").max=String(Math.max(7,S.maco.length-6));
+  $("ponto-val").textContent=$("ponto").value;
+  $("carta-corte").innerHTML=(S.cartaCorte&&S.corte&&S.corte.startsWith("Corte único"))?`<figure>${htmlCarta({id:S.cartaCorte.id,rev:S.inv==="real"&&S.cartaCorte.rev,aberta:true})}<figcaption>Carta vista no corte<br>${esc(CARTAS[S.cartaCorte.id].nome)}</figcaption></figure>`:"";
+  $("status-corte").innerHTML=S.corte?("<b>"+esc(S.corte)+"</b>"):(tot?"Falta cortar.":"Embaralhe antes de cortar.");
+  $("ok-corte").textContent=S.corte?"✓":"";
+  // tirar
+  document.querySelectorAll("[data-tirar]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tirar===S.tirarModo));
+  $("painel-topo").classList.toggle("oculto",S.tirarModo!=="topo");
+  $("painel-leque").classList.toggle("oculto",S.tirarModo!=="leque");
+  const faltam=j.pos.length-S.tiradas.length;
+  $("b-distribuir").disabled=S.tiradas.length>0;
+  $("b-distribuir").textContent="Distribuir "+j.pos.length+(j.pos.length>1?" cartas":" carta");
+  $("desc-tirar").textContent=S.tirarModo==="topo"?"As cartas saem do topo do maço, uma por posição, na ordem do jogo.":"O maço fica aberto em leque, virado para baixo. Escolha as cartas pela intuição; cada uma vai para a próxima posição.";
+  if(S.tirarModo==="leque"){
+    $("leque-status").textContent=faltam>0?`Escolha ${faltam} carta${faltam>1?"s":""} (${S.tiradas.length}/${j.pos.length}).`:"Todas as posições preenchidas.";
+    $("leque").innerHTML=faltam>0?S.maco.map((c,i)=>`<button type="button" class="verso" data-leque="${i}" aria-label="Carta ${i+1} do leque"></button>`).join(""):"";
+  }
+  const avisos=[];if(!tot)avisos.push("maço não embaralhado");if(!S.corte)avisos.push("maço não cortado");
+  $("ok-tirar").textContent=S.tiradas.length===j.pos.length?"✓":"";
+  // mesa
+  const fator=j.k==="celta"?0.42:0;const cw=medidaCarta(j.cols,fator);
+  const mesa=$("mesa");mesa.style.setProperty("--cw",cw+"px");mesa.style.columnGap=(fator?Math.round(cw*fator):10)+"px";
+  mesa.style.gridTemplateColumns=`repeat(${j.cols},${cw}px)`;
+  mesa.innerHTML=j.pos.map((p,i)=>{const t=S.tiradas[i];const cruza=!!p[4];
+    return `<div class="slot${cruza?" cruza":""}" style="--c:${p[2]};--r:${p[3]}">${t?htmlCarta(t,{idx:i,cruza}):`<div class="vazio"></div>`}<div class="rot"><b>${i+1}</b> ${esc(p[0])}</div></div>`;}).join("");
+  const todas=S.tiradas.length===j.pos.length&&S.tiradas.every(t=>t.aberta);
+  $("b-revelar").disabled=!S.tiradas.length||todas;
+  $("dica-mesa").textContent=S.tiradas.length?(todas?"Todas reveladas.":"Toque numa carta para virá-la."):(avisos.length?"Atenção: "+avisos.join(" e ")+". Pode tirar assim mesmo.":"Pronto para tirar.");
+  // leitura
+  $("leitura").classList.toggle("oculto",!todas);
+  $("leitura-vazia").classList.toggle("oculto",todas);
+  if(todas){
+    const v=veredito();
+    $("veredito").innerHTML=v?`<div class="veredito ${{S:"sim",N:"nao",T:"talvez"}[v.res]}"><span class="pos" style="font-size:12.5px;color:var(--nevoa);letter-spacing:.04em;text-transform:uppercase">Resposta pela convenção</span><span class="grande">${v.res==="T"?(j.k==="sn3"?"Indefinido":"Talvez"):YN_TXT[v.res]}</span><span class="nota">${esc(v.det)} Tendência de cada carta é convenção de leitura, não regra de Waite.</span></div>`:"";
+    $("itens").innerHTML=S.tiradas.map((t,i)=>{const c=CARTAS[t.id],p=j.pos[i];
+      return `<div class="item">${htmlCarta(t,{aberta:true})}<div><div class="pos">${i+1} · ${esc(p[0])}</div><h3>${esc(c.nome)} <span class="tag ${t.rev?"inv":"dir"}">${t.rev?"invertida":"direita"}</span>${j.sn?` <span class="tag yn-${ynCarta(t)}">${YN_TXT[ynCarta(t)]}</span>`:""}</h3><p>${esc(t.rev?c.inv:c.dir)}.</p><p class="desc-pos">Na posição: ${esc(p[1])}.${c.maior?" "+esc(c.attr)+" (Golden Dawn).":" "+esc(NAIPES.find(x=>x.k===c.naipe).el)+"."}</p></div></div>`;}).join("");
+    let fh="<h3>Fatos da tiragem</h3>"+fatos().map(x=>`<div>${x}</div>`).join("");
+    if(S.fundo&&S.maco.length){const b=S.maco[S.maco.length-1];fh+=`<div>Carta do fundo do maço: <b>${esc(CARTAS[b.id].nome)}</b>${S.inv==="real"&&b.rev?" (invertida)":""}.</div>`;}
+    if(S.saltos.length)fh+=`<div>Saltaram: ${S.saltos.map(b=>"<b>"+esc(CARTAS[b.id].nome)+"</b>").join(", ")}.</div>`;
+    $("fatos").innerHTML=fh;
+    $("prompt").value=textoPrompt();
+    $("b-salvar").disabled=S.salvo;
+    $("salvo").textContent=S.salvo?"Salva no diário.":"";
+  }
+}
+
+/* ---------- eventos ---------- */
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.jogo){if(S.tiradas.length)recolher(true);S.jogo=b.dataset.jogo;render();return;}
+  if(b.dataset.inv){S.inv=b.dataset.inv;render();return;}
+  if(b.dataset.emb){embaralhar(b.dataset.emb);return;}
+  if(b.dataset.corte){S.corteModo=b.dataset.corte;render();return;}
+  if(b.dataset.monte!=null){tocarMonte(+b.dataset.monte);return;}
+  if(b.dataset.tirar){if(!S.tiradas.length)S.tirarModo=b.dataset.tirar;render();return;}
+  if(b.dataset.leque!=null){escolherLeque(+b.dataset.leque);return;}
+  if(b.dataset.virar!=null){const t=S.tiradas[+b.dataset.virar];if(t&&!t.aberta){t.aberta=true;b.classList.add("aberta");b.setAttribute("aria-label",CARTAS[t.id].nome+(t.rev?", invertida":""));setTimeout(render,650);}return;}
+});
+$("pergunta").addEventListener("input",e=>{S.pergunta=e.target.value;if(!$("leitura").classList.contains("oculto"))$("prompt").value=textoPrompt();});
+$("prob").addEventListener("change",e=>{S.prob=parseFloat(e.target.value);render();});
+$("opt-salto").addEventListener("change",e=>{S.salto=e.target.checked;render();});
+$("opt-fundo").addEventListener("change",e=>{S.fundo=e.target.checked;render();});
+$("opt-base").addEventListener("change",e=>{S.verBase=e.target.checked;render();});
+$("b-novo").addEventListener("click",()=>{const keep={jogo:S.jogo,pergunta:S.pergunta,inv:S.inv,prob:S.prob,salto:S.salto,fundo:S.fundo,corteModo:S.corteModo,tirarModo:S.tirarModo};S=Object.assign(estadoInicial(),keep);render();});
+$("b-dividir").addEventListener("click",dividir);
+$("ponto").addEventListener("input",e=>{$("ponto-val").textContent=e.target.value;});
+$("b-cortar").addEventListener("click",()=>cortarEm(parseInt($("ponto").value,10)));
+$("b-cortar-acaso").addEventListener("click",()=>{const n=S.maco.length;cortarEm(Math.round(n/2)+binomial(20,.5)-10);});
+$("b-distribuir").addEventListener("click",distribuir);
+$("b-revelar").addEventListener("click",()=>{S.tiradas.forEach(t=>t.aberta=true);document.querySelectorAll("#mesa .carta").forEach(el=>el.classList.add("aberta"));setTimeout(render,650);});
+$("b-recolher").addEventListener("click",()=>{recolher(false);$("s-maco").scrollIntoView({behavior:"smooth",block:"start"});});
+window.addEventListener("resize",()=>{clearTimeout(window.__rz);window.__rz=setTimeout(render,150);});
+
+$("b-copiar").addEventListener("click",async()=>{
+  const txt=$("prompt").value;
+  try{await navigator.clipboard.writeText(txt);$("copiado").textContent="Copiado.";}
+  catch(err){const ta=$("prompt");ta.focus();ta.select();let ok=false;try{ok=document.execCommand("copy");}catch(e2){}
+    $("copiado").textContent=ok?"Copiado.":"Texto selecionado: use Copiar do teclado.";}
+});
+
+/* ---------- Gemma no navegador ---------- */
+let llm=null;
+const MP="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai@0.10.30";
+$("b-gemma-carregar").addEventListener("click",async()=>{
+  const st=$("gemma-status");const f=$("arq-modelo").files[0];
+  if(!f){st.textContent="Escolha primeiro o arquivo do modelo salvo no aparelho.";return;}
+  if(!("gpu" in navigator)){st.textContent="Este navegador não oferece WebGPU aqui. No Android, use o Chrome atualizado; dentro do app do Claude pode não estar disponível.";return;}
+  $("b-gemma-carregar").disabled=true;st.textContent="Carregando a biblioteca…";
+  try{
+    const mod=await import(MP+"/genai_bundle.mjs");
+    st.textContent="Preparando o motor…";
+    const fs=await mod.FilesetResolver.forGenAiTasks(MP+"/wasm");
+    st.textContent="Lendo o modelo ("+(f.size/1e9).toFixed(1)+" GB). Pode levar alguns minutos…";
+    llm=await mod.LlmInference.createFromOptions(fs,{baseOptions:{modelAssetBuffer:f.stream().getReader()},maxTokens:2048,topK:40,temperature:.7,randomSeed:randInt(100000)});
+    st.textContent="Modelo pronto: "+f.name+".";$("b-gemma-ler").disabled=false;
+  }catch(err){
+    st.textContent="Não carregou: "+(err&&err.message?err.message:String(err))+". Se o erro fala de rede, conecte à internet uma vez para baixar o motor; senão, use o AI Edge Gallery.";
+    $("b-gemma-carregar").disabled=false;
+  }
+});
+$("b-gemma-ler").addEventListener("click",async()=>{
+  if(!llm)return;const out=$("gemma-saida"),st=$("gemma-status");
+  let p=textoPrompt();if($("opt-tpl").checked)p="<start_of_turn>user\n"+p+"<end_of_turn>\n<start_of_turn>model\n";
+  out.textContent="";$("b-gemma-ler").disabled=true;st.textContent="Gemma está lendo…";
+  try{await llm.generateResponse(p,(parcial,fim)=>{out.textContent+=parcial;if(fim)st.textContent="Leitura concluída.";});}
+  catch(err){st.textContent="Falhou: "+(err&&err.message?err.message:String(err));}
+  $("b-gemma-ler").disabled=false;
+});
+
+/* ---------- diário ---------- */
+let db=null,uid=null,colecao=null,diarioLocal=[];
+function lsGet(){try{return JSON.parse(localStorage.getItem("tarot-diario")||"[]");}catch(e){return[];}}
+function lsSet(a){try{localStorage.setItem("tarot-diario",JSON.stringify(a));return true;}catch(e){return false;}}
+function registroAtual(){const j=jogo();const v=veredito();
+  return{ts:Date.now(),jogo:j.k,pergunta:S.pergunta.trim(),inv:S.inv,corte:S.corte||"",yn:v?v.res:"",
+    cartas:S.tiradas.map((t,i)=>({id:t.id,rev:t.rev,pos:j.pos[i][0]})),
+    extra:{fundo:S.fundo&&S.maco.length?S.maco[S.maco.length-1].id:null,saltos:S.saltos.map(s=>s.id)}};}
+function renderDiario(lista){
+  $("diario-onde").textContent=colecao?"":"Guardado só neste aparelho. Se apagar os dados do navegador, o diário some.";
+  if(!lista.length){$("diario").innerHTML='<p class="vazio-txt">Nenhuma leitura salva ainda.</p>';return;}
+  $("diario").innerHTML=lista.map(r=>{const j=JOGOS.find(x=>x.k===r.jogo)||{nome:r.jogo,sub:""};
+    const d=new Date(r.ts);const data=d.toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"})+" · "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+    return `<details><summary>${esc(j.nome)} ${r.yn?`<span class="tag yn-${r.yn}">${YN_TXT[r.yn]}</span>`:""}<small>${esc(data)}${r.pergunta?" · "+esc(r.pergunta):""}</small></summary><ul>${(r.cartas||[]).map(c=>`<li>${esc(c.pos)}: <b>${esc(CARTAS[c.id].nome)}</b>${c.rev?" (invertida)":""}</li>`).join("")}</ul>${r.corte?`<p class="nota">${esc(r.corte)}</p>`:""}</details>`;}).join("");
+}
+async function carregarDiario(){
+  if(colecao){
+    const timer=setTimeout(()=>{$("diario-onde").textContent="O diário ainda não respondeu; pode estar sem conexão.";},10000);
+    try{const snap=await colecao.orderBy("ts","desc").limit(60).get();clearTimeout(timer);renderDiario(snap.docs.map(d=>d.data()));}
+    catch(e){clearTimeout(timer);colecao=null;diarioLocal=lsGet();renderDiario(diarioLocal);}
+  }else{diarioLocal=lsGet();renderDiario(diarioLocal);}
+}
+$("b-salvar").addEventListener("click",async()=>{
+  if(S.salvo)return;const r=registroAtual();$("b-salvar").disabled=true;
+  if(colecao){try{await colecao.doc(String(r.ts)).set(r);S.salvo=true;render();carregarDiario();return;}
+    catch(e){if(e&&e.code==="quota_exceeded"){$("salvo").textContent="Diário cheio: não coube mais uma leitura.";$("b-salvar").disabled=false;return;}colecao=null;}}
+  diarioLocal=lsGet();diarioLocal.unshift(r);diarioLocal=diarioLocal.slice(0,200);
+  if(lsSet(diarioLocal)){S.salvo=true;render();renderDiario(diarioLocal);}else{$("salvo").textContent="Este navegador não permite salvar.";$("b-salvar").disabled=false;}
+});
+
+/* ---------- início ---------- */
+function start(dados){
+  S=Object.assign(estadoInicial(),dados&&dados.S?dados.S:{});
+  render();renderDiario(lsGet());
+}
+try{const hot=window.claude&&window.claude.hot;if(hot&&hot.snapshot)hot.snapshot(()=>({S}));
+  if(hot&&hot.ready)hot.ready(start);else start((hot&&hot.data)||{});}catch(e){start({});}
+if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("./sw.js").catch(()=>{});});}
+</script>
+</body>
+</html>
