@@ -328,7 +328,15 @@ footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;fon
     <div class="backup" id="backup">
       <button class="btn" type="button" id="b-exportar">Exportar backup</button>
       <label class="btn" for="arq-backup">Restaurar backup<input type="file" id="arq-backup" accept=".json,application/json"></label>
+      <button class="btn" type="button" id="b-apagar">Apagar diário</button>
       <span class="nota" id="backup-status" aria-live="polite"></span>
+    </div>
+    <div class="veredito nao oculto" id="confirma-apagar" role="alertdialog" aria-labelledby="confirma-txt">
+      <span id="confirma-txt">Apagar todas as leituras deste aparelho? Não dá para desfazer. Se quiser guardar, exporte um backup antes.</span>
+      <div class="linha" style="margin-top:6px">
+        <button class="btn" type="button" id="b-apagar-sim" style="border-color:var(--nao);color:#f0b1b5">Apagar tudo</button>
+        <button class="btn" type="button" id="b-apagar-nao">Cancelar</button>
+      </div>
     </div>
     <div class="diario" id="diario"></div>
   </section>
@@ -551,7 +559,7 @@ function recolher(silencioso){
   S.maco=volta.concat(saltos,S.maco);S.tiradas=[];S.saltos=[];
   S.emb={overhand:0,riffle:0,mesa:0};S.corte=null;S.montes=null;S.ordemMontes=[];S.cartaCorte=null;S.bases=null;S.rodada++;S.salvo=false;
   S.reg.unshift("Cartas recolhidas por cima do maço.");S.reg=S.reg.slice(0,12);
-  ["gemma-saida","claude-saida"].forEach(id=>{$(id).textContent="";});
+  ["gemma-saida","claude-saida"].forEach(id=>{const el=$(id);if(el)el.textContent="";});
   if(!silencioso)render();
 }
 
@@ -895,6 +903,19 @@ $("arq-backup").addEventListener("change",async e=>{
     else st.textContent="Este navegador não permitiu salvar.";
   }catch(err){st.textContent="Esse arquivo não é um backup do diário.";}
   e.target.value="";
+});
+
+$("b-apagar").addEventListener("click",()=>{
+  const n=lsGet().length;const st=$("backup-status");
+  if(!n){st.textContent="O diário já está vazio.";return;}
+  $("confirma-txt").textContent="Apagar "+(n>1?"as "+n+" leituras":"a leitura")+" deste aparelho? Não dá para desfazer. Se quiser guardar, exporte um backup antes.";
+  $("confirma-apagar").classList.remove("oculto");st.textContent="";$("b-apagar-nao").focus();
+});
+$("b-apagar-nao").addEventListener("click",()=>{$("confirma-apagar").classList.add("oculto");$("b-apagar").focus();});
+$("b-apagar-sim").addEventListener("click",()=>{
+  const st=$("backup-status");
+  if(lsSet([])){diarioLocal=[];renderDiario([]);st.textContent="Diário apagado.";}else st.textContent="Este navegador não permitiu apagar.";
+  $("confirma-apagar").classList.add("oculto");
 });
 
 /* ---------- início ---------- */
