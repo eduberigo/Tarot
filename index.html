@@ -71,7 +71,7 @@ textarea{min-height:120px;resize:vertical;font-size:14px;line-height:1.45}
 .toggle input{width:20px;height:20px;accent-color:var(--ouro);margin-top:2px;flex:none}
 .toggle span small{display:block;color:var(--nevoa);font-size:13px}
 .maco-vis{display:flex;gap:16px;align-items:center}
-.pilha{position:relative;width:74px;height:126px;flex:none}
+.pilha{position:relative;width:74px;height:123px;flex:none}
 .pilha .verso{position:absolute;inset:0;border-radius:7px}
 .pilha.mexe{animation:mexe .5s ease}
 @keyframes mexe{0%{transform:none}25%{transform:translateX(-6px) rotate(-3deg)}50%{transform:translateX(6px) rotate(3deg)}75%{transform:translateX(-3px) rotate(-1deg)}100%{transform:none}}
@@ -82,19 +82,21 @@ textarea{min-height:120px;resize:vertical;font-size:14px;line-height:1.45}
 .selo.bom{background:rgba(127,176,138,.16);color:#b8dcc0}
 /* carta */
 .verso{background:
+   url("cards/verso.webp") center/cover no-repeat,
    radial-gradient(circle at 50% 50%,rgba(227,196,126,.9) 0 5%,transparent 6%),
    radial-gradient(circle at 50% 50%,transparent 0 17%,rgba(201,161,77,.65) 18% 19%,transparent 20%),
    repeating-linear-gradient(45deg,rgba(201,161,77,.28) 0 1px,transparent 1px 9px),
    repeating-linear-gradient(-45deg,rgba(201,161,77,.28) 0 1px,transparent 1px 9px),
    linear-gradient(160deg,#2b2350,#1b1734);
-  border:2px solid #d9bd7c;box-shadow:inset 0 0 0 3px #1b1734,inset 0 0 0 4px rgba(201,161,77,.6),0 2px 6px rgba(0,0,0,.45)}
-.carta{position:relative;width:var(--cw,88px);aspect-ratio:7/12;perspective:800px;cursor:pointer;background:none;border:0;padding:0;border-radius:7px}
+  border:3px solid #f3ede2;box-shadow:0 2px 6px rgba(0,0,0,.45)}
+.carta{position:relative;width:var(--cw,88px);aspect-ratio:3/5;perspective:800px;cursor:pointer;background:none;border:0;padding:0;border-radius:7px}
 .carta .gira{position:absolute;inset:0;transition:transform .6s cubic-bezier(.3,.7,.3,1);transform-style:preserve-3d}
 .carta.aberta .gira{transform:rotateY(180deg)}
 .carta .lado{position:absolute;inset:0;border-radius:7px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
 .carta .frente{transform:rotateY(180deg);background:var(--linho);box-shadow:0 2px 8px rgba(0,0,0,.5)}
 .carta .frente svg{width:100%;height:100%;display:block}
-.carta.inv .frente svg{transform:rotate(180deg)}
+.carta .frente img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.carta.inv .frente svg,.carta.inv .frente img{transform:rotate(180deg)}
 .carta.cruza{transform:rotate(90deg);z-index:2}
 @media (prefers-reduced-motion:reduce){.carta .gira{transition:none}.pilha.mexe{animation:none}}
 /* mesa */
@@ -105,11 +107,11 @@ textarea{min-height:120px;resize:vertical;font-size:14px;line-height:1.45}
 .slot .rot b{color:var(--ouro);font-weight:500;font-variant-numeric:tabular-nums}
 .slot.cruza{z-index:2;align-self:start}
 .slot.cruza .rot{display:none}
-.vazio{width:var(--cw);aspect-ratio:7/12;border:1px dashed rgba(201,161,77,.35);border-radius:7px}
+.vazio{width:var(--cw);aspect-ratio:3/5;border:1px dashed rgba(201,161,77,.35);border-radius:7px}
 /* corte */
 .montes{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 .monte{display:grid;gap:6px;justify-items:center;background:none;border:0;cursor:pointer;padding:6px;border-radius:10px;color:var(--texto)}
-.monte .pilha{width:64px;height:110px}
+.monte .pilha{width:64px;height:107px}
 .monte .ordem{font-family:var(--f-display);font-size:20px;color:var(--ouro-2);min-height:26px}
 .monte[disabled]{cursor:default}
 .monte small{color:var(--nevoa);font-size:12.5px}
@@ -119,7 +121,7 @@ textarea{min-height:120px;resize:vertical;font-size:14px;line-height:1.45}
 input[type=range]{width:100%;accent-color:var(--ouro)}
 /* leque */
 .leque{display:flex;overflow-x:auto;padding:10px 4px 16px;scroll-snap-type:x proximity}
-.leque button{flex:none;width:44px;height:76px;margin-right:-22px;border-radius:5px;cursor:pointer;padding:0;transition:transform .15s;scroll-snap-align:start}
+.leque button{flex:none;width:44px;height:73px;margin-right:-22px;border-radius:5px;cursor:pointer;padding:0;transition:transform .15s;scroll-snap-align:start}
 .leque button:hover,.leque button:focus-visible{transform:translateY(-8px)}
 /* leitura */
 .veredito{display:grid;gap:4px;padding:14px;border-radius:12px;background:var(--mesa);border:1px solid rgba(255,255,255,.08)}
@@ -313,7 +315,7 @@ footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;fon
     <div class="diario" id="diario"></div>
   </section>
 
-  <footer>Significados-base: A. E. Waite, <i>The Pictorial Key to the Tarot</i> (1910), em palavras-chave resumidas. Aleatoriedade: gerador criptográfico do navegador.</footer>
+  <footer>Imagens: baralho de 1909 de Pamela Colman Smith, domínio público (digitalização “Pam-A” restaurada por Steve P.). Significados-base: A. E. Waite, <i>The Pictorial Key to the Tarot</i> (1910), em palavras-chave resumidas. Aleatoriedade: gerador criptográfico do navegador.</footer>
 </div>
 
 <script>
@@ -582,7 +584,7 @@ function htmlCarta(t,opts={}){
   const rotulo=(t.aberta||opts.aberta)?CARTAS[t.id].nome+(t.rev?", invertida":""):"Carta virada para baixo"+(opts.idx!=null?", toque para revelar":"");
   const tag=opts.idx!=null?`button type="button" data-virar="${opts.idx}"`:'div';
   const fecha=opts.idx!=null?"button":"div";
-  return `<${tag} class="${cls.join(" ")}" aria-label="${esc(rotulo)}"><div class="gira"><div class="lado verso"></div><div class="lado frente">${svgCarta(t.id)}</div></div></${fecha}>`;
+  return `<${tag} class="${cls.join(" ")}" aria-label="${esc(rotulo)}"><div class="gira"><div class="lado verso"></div><div class="lado frente">${svgCarta(t.id)}<img data-c="1" src="cards/${String(t.id).padStart(2,"0")}.webp" alt=""></div></div></${fecha}>`;
 }
 
 /* ---------- leitura ---------- */
@@ -727,6 +729,8 @@ function render(){
 }
 
 /* ---------- eventos ---------- */
+// se a imagem da carta não carregar, fica o desenho de reserva
+document.addEventListener("error",e=>{const el=e.target;if(el&&el.tagName==="IMG"&&el.dataset.c)el.remove();},true);
 document.addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.jogo){if(S.tiradas.length)recolher(true);S.jogo=b.dataset.jogo;render();return;}
