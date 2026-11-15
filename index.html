@@ -153,6 +153,19 @@ ol.passos{margin:0;padding-left:1.2em;font-size:14.5px;color:var(--nevoa);displa
 .diario summary small{color:var(--nevoa);display:block;font-size:12.5px}
 .diario ul{margin:8px 0;padding-left:1.1em;font-size:14px}
 .vazio-txt{color:var(--nevoa);font-size:14.5px;font-style:italic;margin:0}
+.zoom{position:fixed;inset:0;z-index:50;background:#0e0c14;display:grid;grid-template-rows:auto 1fr auto;gap:10px;padding:14px 16px calc(16px + env(safe-area-inset-bottom));}
+.zoom[hidden]{display:none}
+.zoom .barra{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.zoom .barra h3{margin:0;font-family:var(--f-titulo);font-weight:400;font-size:20px;line-height:1.2}
+.zoom .palco{display:grid;place-items:center;min-height:0;overflow:auto}
+.zoom .palco img{max-width:100%;max-height:100%;width:auto;height:auto;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.6);transition:transform .35s ease}
+.zoom .palco img.inv{transform:rotate(180deg)}
+.zoom .rodape{display:grid;gap:8px;max-width:65ch;margin:0 auto;width:100%}
+.zoom .rodape p{margin:0;font-size:15px}
+.fechar{background:var(--mesa-3);border:1px solid rgba(255,255,255,.12);border-radius:999px;width:42px;height:42px;font-size:22px;line-height:1;cursor:pointer;flex:none}
+.item .carta{cursor:zoom-in}
+.backup{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.backup label.btn input{position:absolute;width:1px;height:1px;opacity:0}
 footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;font-style:italic;font-family:var(--f-titulo)}
 .oculto{display:none!important}
 </style>
@@ -312,8 +325,22 @@ footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;fon
   <section class="etapa" id="s-diario">
     <h2><span class="n">VI</span>Diário de leituras</h2>
     <p class="nota" id="diario-onde"></p>
+    <div class="backup" id="backup">
+      <button class="btn" type="button" id="b-exportar">Exportar backup</button>
+      <label class="btn" for="arq-backup">Restaurar backup<input type="file" id="arq-backup" accept=".json,application/json"></label>
+      <span class="nota" id="backup-status" aria-live="polite"></span>
+    </div>
     <div class="diario" id="diario"></div>
   </section>
+
+  <div class="zoom" id="zoom" hidden role="dialog" aria-modal="true" aria-labelledby="zoom-nome">
+    <div class="barra"><h3 id="zoom-nome"></h3><button type="button" class="fechar" id="zoom-fechar" aria-label="Fechar">×</button></div>
+    <div class="palco" id="zoom-palco"></div>
+    <div class="rodape">
+      <p id="zoom-texto"></p>
+      <div class="linha"><button type="button" class="btn" id="zoom-girar">Ver de pé</button><span class="nota">Use dois dedos para aproximar.</span></div>
+    </div>
+  </div>
 
   <footer>Imagens: baralho de 1909 de Pamela Colman Smith, domínio público (digitalização “Pam-A” restaurada por Steve P.). Significados-base: A. E. Waite, <i>The Pictorial Key to the Tarot</i> (1910), em palavras-chave resumidas. Aleatoriedade: gerador criptográfico do navegador.</footer>
 </div>
@@ -582,8 +609,8 @@ ${meio}
 function htmlCarta(t,opts={}){
   const cls=["carta"];if(t.aberta||opts.aberta)cls.push("aberta");if(t.rev)cls.push("inv");if(opts.cruza)cls.push("cruza");
   const rotulo=(t.aberta||opts.aberta)?CARTAS[t.id].nome+(t.rev?", invertida":""):"Carta virada para baixo"+(opts.idx!=null?", toque para revelar":"");
-  const tag=opts.idx!=null?`button type="button" data-virar="${opts.idx}"`:'div';
-  const fecha=opts.idx!=null?"button":"div";
+  const tag=opts.idx!=null?`button type="button" data-virar="${opts.idx}"`:opts.zoom!=null?`button type="button" data-zoom="${opts.zoom}"`:'div';
+  const fecha=(opts.idx!=null||opts.zoom!=null)?"button":"div";
   return `<${tag} class="${cls.join(" ")}" aria-label="${esc(rotulo)}"><div class="gira"><div class="lado verso"></div><div class="lado frente">${svgCarta(t.id)}<img data-c="1" src="cards/${String(t.id).padStart(2,"0")}.webp" alt=""></div></div></${fecha}>`;
 }
 
@@ -717,7 +744,7 @@ function render(){
     const v=veredito();
     $("veredito").innerHTML=v?`<div class="veredito ${{S:"sim",N:"nao",T:"talvez"}[v.res]}"><span class="pos" style="font-size:12.5px;color:var(--nevoa);letter-spacing:.04em;text-transform:uppercase">Resposta pela convenção</span><span class="grande">${v.res==="T"?(j.k==="sn3"?"Indefinido":"Talvez"):YN_TXT[v.res]}</span><span class="nota">${esc(v.det)} Tendência de cada carta é convenção de leitura, não regra de Waite.</span></div>`:"";
     $("itens").innerHTML=S.tiradas.map((t,i)=>{const c=CARTAS[t.id],p=j.pos[i];
-      return `<div class="item">${htmlCarta(t,{aberta:true})}<div><div class="pos">${i+1} · ${esc(p[0])}</div><h3>${esc(c.nome)} <span class="tag ${t.rev?"inv":"dir"}">${t.rev?"invertida":"direita"}</span>${j.sn?` <span class="tag yn-${ynCarta(t)}">${YN_TXT[ynCarta(t)]}</span>`:""}</h3><p>${esc(t.rev?c.inv:c.dir)}.</p><p class="desc-pos">Na posição: ${esc(p[1])}.${c.maior?" "+esc(c.attr)+" (Golden Dawn).":" "+esc(NAIPES.find(x=>x.k===c.naipe).el)+"."}</p></div></div>`;}).join("");
+      return `<div class="item">${htmlCarta(t,{aberta:true,zoom:i})}<div><div class="pos">${i+1} · ${esc(p[0])}</div><h3>${esc(c.nome)} <span class="tag ${t.rev?"inv":"dir"}">${t.rev?"invertida":"direita"}</span>${j.sn?` <span class="tag yn-${ynCarta(t)}">${YN_TXT[ynCarta(t)]}</span>`:""}</h3><p>${esc(t.rev?c.inv:c.dir)}.</p><p class="desc-pos">Na posição: ${esc(p[1])}.${c.maior?" "+esc(c.attr)+" (Golden Dawn).":" "+esc(NAIPES.find(x=>x.k===c.naipe).el)+"."}</p></div></div>`;}).join("");
     let fh="<h3>Fatos da tiragem</h3>"+fatos().map(x=>`<div>${x}</div>`).join("");
     if(S.fundo&&S.maco.length){const b=S.maco[S.maco.length-1];fh+=`<div>Carta do fundo do maço: <b>${esc(CARTAS[b.id].nome)}</b>${S.inv==="real"&&b.rev?" (invertida)":""}.</div>`;}
     if(S.saltos.length)fh+=`<div>Saltaram: ${S.saltos.map(b=>"<b>"+esc(CARTAS[b.id].nome)+"</b>").join(", ")}.</div>`;
@@ -730,7 +757,7 @@ function render(){
 
 /* ---------- eventos ---------- */
 // se a imagem da carta não carregar, fica o desenho de reserva
-document.addEventListener("error",e=>{const el=e.target;if(el&&el.tagName==="IMG"&&el.dataset.c)el.remove();},true);
+document.addEventListener("error",e=>{const el=e.target;if(!el||el.tagName!=="IMG")return;if(el.dataset.hd){el.removeAttribute("data-hd");el.src=el.dataset.leve;return;}if(el.dataset.c)el.remove();},true);
 document.addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.jogo){if(S.tiradas.length)recolher(true);S.jogo=b.dataset.jogo;render();return;}
@@ -740,7 +767,8 @@ document.addEventListener("click",e=>{
   if(b.dataset.monte!=null){tocarMonte(+b.dataset.monte);return;}
   if(b.dataset.tirar){if(!S.tiradas.length)S.tirarModo=b.dataset.tirar;render();return;}
   if(b.dataset.leque!=null){escolherLeque(+b.dataset.leque);return;}
-  if(b.dataset.virar!=null){const t=S.tiradas[+b.dataset.virar];if(t&&!t.aberta){t.aberta=true;b.classList.add("aberta");b.setAttribute("aria-label",CARTAS[t.id].nome+(t.rev?", invertida":""));setTimeout(render,650);}return;}
+  if(b.dataset.zoom!=null){abrirZoom(+b.dataset.zoom);return;}
+  if(b.dataset.virar!=null){const t=S.tiradas[+b.dataset.virar];if(t&&t.aberta){abrirZoom(+b.dataset.virar);return;}if(t&&!t.aberta){t.aberta=true;b.classList.add("aberta");b.setAttribute("aria-label",CARTAS[t.id].nome+(t.rev?", invertida":""));setTimeout(render,650);}return;}
 });
 $("pergunta").addEventListener("input",e=>{S.pergunta=e.target.value;if(!$("leitura").classList.contains("oculto"))$("prompt").value=textoPrompt();});
 $("prob").addEventListener("change",e=>{S.prob=parseFloat(e.target.value);render();});
@@ -763,6 +791,23 @@ $("b-copiar").addEventListener("click",async()=>{
   catch(err){const ta=$("prompt");ta.focus();ta.select();let ok=false;try{ok=document.execCommand("copy");}catch(e2){}
     $("copiado").textContent=ok?"Copiado.":"Texto selecionado: use Copiar do teclado.";}
 });
+
+/* ---------- carta em tela cheia ---------- */
+let zoomAtual=null,zoomVoltar=null;
+function abrirZoom(i){
+  const t=S.tiradas[i];if(!t)return;const c=CARTAS[t.id],j=jogo(),p=j.pos[i];const n=String(t.id).padStart(2,"0");
+  zoomAtual={rev:t.rev,emPe:false};zoomVoltar=document.activeElement;
+  $("zoom-nome").textContent=(i+1)+" · "+p[0]+" — "+c.nome+(t.rev?" (invertida)":"");
+  $("zoom-palco").innerHTML=`<img data-hd="1" data-leve="cards/${n}.webp" src="cards/hd/${n}.webp" alt="${esc(c.nome)}"${t.rev?' class="inv"':""}>`;
+  $("zoom-texto").textContent=(t.rev?c.inv:c.dir)+".";
+  $("zoom-girar").classList.toggle("oculto",!t.rev);$("zoom-girar").textContent="Ver de pé";
+  $("zoom").hidden=false;document.body.style.overflow="hidden";$("zoom-fechar").focus();
+}
+function fecharZoom(){$("zoom").hidden=true;document.body.style.overflow="";$("zoom-palco").innerHTML="";if(zoomVoltar&&zoomVoltar.focus)zoomVoltar.focus();}
+$("zoom-fechar").addEventListener("click",fecharZoom);
+$("zoom").addEventListener("click",e=>{if(e.target.id==="zoom"||e.target.id==="zoom-palco")fecharZoom();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("zoom").hidden)fecharZoom();});
+$("zoom-girar").addEventListener("click",()=>{if(!zoomAtual)return;zoomAtual.emPe=!zoomAtual.emPe;const im=$("zoom-palco").querySelector("img");if(im)im.classList.toggle("inv",!zoomAtual.emPe);$("zoom-girar").textContent=zoomAtual.emPe?"Ver como saiu":"Ver de pé";});
 
 /* ---------- Gemma no navegador ---------- */
 let llm=null;
@@ -802,7 +847,8 @@ function registroAtual(){const j=jogo();const v=veredito();
     cartas:S.tiradas.map((t,i)=>({id:t.id,rev:t.rev,pos:j.pos[i][0]})),
     extra:{fundo:S.fundo&&S.maco.length?S.maco[S.maco.length-1].id:null,saltos:S.saltos.map(s=>s.id)}};}
 function renderDiario(lista){
-  $("diario-onde").textContent=colecao?"":"Guardado só neste aparelho. Se apagar os dados do navegador, o diário some.";
+  $("backup").classList.toggle("oculto",!!colecao);
+  $("diario-onde").textContent=colecao?"":"Guardado só neste aparelho. Exporte um backup de vez em quando: se apagar os dados do navegador, o diário some.";
   if(!lista.length){$("diario").innerHTML='<p class="vazio-txt">Nenhuma leitura salva ainda.</p>';return;}
   $("diario").innerHTML=lista.map(r=>{const j=JOGOS.find(x=>x.k===r.jogo)||{nome:r.jogo,sub:""};
     const d=new Date(r.ts);const data=d.toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"})+" · "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
@@ -819,8 +865,36 @@ $("b-salvar").addEventListener("click",async()=>{
   if(S.salvo)return;const r=registroAtual();$("b-salvar").disabled=true;
   if(colecao){try{await colecao.doc(String(r.ts)).set(r);S.salvo=true;render();carregarDiario();return;}
     catch(e){if(e&&e.code==="quota_exceeded"){$("salvo").textContent="Diário cheio: não coube mais uma leitura.";$("b-salvar").disabled=false;return;}colecao=null;}}
-  diarioLocal=lsGet();diarioLocal.unshift(r);diarioLocal=diarioLocal.slice(0,200);
+  diarioLocal=lsGet();diarioLocal.unshift(r);diarioLocal=diarioLocal.slice(0,1000);
   if(lsSet(diarioLocal)){S.salvo=true;render();renderDiario(diarioLocal);}else{$("salvo").textContent="Este navegador não permite salvar.";$("b-salvar").disabled=false;}
+});
+
+/* ---------- backup do diário ---------- */
+function hoje(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+$("b-exportar").addEventListener("click",()=>{
+  const lista=lsGet();const st=$("backup-status");
+  if(!lista.length){st.textContent="O diário está vazio; nada para exportar.";return;}
+  const dados={app:"mesa-de-taro",versao:1,exportado:new Date().toISOString(),leituras:lista};
+  const blob=new Blob([JSON.stringify(dados,null,1)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);const a=document.createElement("a");
+  a.href=url;a.download="diario-tarot-"+hoje()+".json";document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+  st.textContent=lista.length+" leitura"+(lista.length>1?"s":"")+" exportada"+(lista.length>1?"s":"")+" para Downloads.";
+});
+$("arq-backup").addEventListener("change",async e=>{
+  const f=e.target.files[0];const st=$("backup-status");if(!f)return;
+  try{
+    const dados=JSON.parse(await f.text());
+    const novas=Array.isArray(dados)?dados:dados.leituras;
+    if(!Array.isArray(novas))throw new Error("formato");
+    const validas=novas.filter(r=>r&&typeof r.ts==="number"&&Array.isArray(r.cartas)&&r.cartas.every(c=>Number.isInteger(c.id)&&c.id>=0&&c.id<78));
+    const atual=lsGet();const vistos=new Set(atual.map(r=>r.ts));
+    const add=validas.filter(r=>!vistos.has(r.ts));
+    const junto=atual.concat(add).sort((a,b)=>b.ts-a.ts);
+    if(lsSet(junto)){diarioLocal=junto;renderDiario(junto);st.textContent=add.length?add.length+" leitura"+(add.length>1?"s":"")+" restaurada"+(add.length>1?"s":"")+".":"Nada novo: essas leituras já estavam no diário.";}
+    else st.textContent="Este navegador não permitiu salvar.";
+  }catch(err){st.textContent="Esse arquivo não é um backup do diário.";}
+  e.target.value="";
 });
 
 /* ---------- início ---------- */
