@@ -167,6 +167,16 @@ ol.passos{margin:0;padding-left:1.2em;font-size:14.5px;color:var(--nevoa);displa
 .backup{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .backup label.btn input{position:absolute;width:1px;height:1px;opacity:0}
 footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;font-style:italic;font-family:var(--f-titulo)}
+.com-sig{position:relative;width:var(--cw);aspect-ratio:3/5}
+.com-sig .sig-fundo{position:absolute;inset:0;transition:transform .3s ease}
+.com-sig .sig-fundo .carta{cursor:default}
+.com-sig.coberto .sig-fundo{transform:translate(-8px,-8px)}
+.com-sig>.carta{position:absolute;left:0;top:0}
+#sig-carta .carta{--cw:62px;cursor:default}
+.como-sig{font-size:14.5px;color:var(--nevoa)}
+.como-sig summary{cursor:pointer;color:var(--texto);font-weight:500}
+.como-sig ul{margin:8px 0 0;padding-left:1.1em;display:grid;gap:5px}
+.como-sig b{color:var(--texto);font-weight:500}
 .oculto{display:none!important}
 </style>
 </head>
@@ -181,6 +191,33 @@ footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;fon
     <h2><span class="n">I</span>Jogo e pergunta</h2>
     <div class="chips" id="lista-jogos" role="group" aria-label="Tipo de jogo"></div>
     <p class="nota" id="desc-jogo"></p>
+    <div id="painel-sig" class="oculto" style="display:grid;gap:10px">
+      <label class="campo" for="sig">Significador: a carta que representa você ou o assunto (opcional)
+        <select id="sig"><option value="">Sem significador</option></select>
+      </label>
+      <div id="sig-vis" class="oculto" style="display:flex;gap:12px;align-items:flex-start">
+        <div id="sig-carta"></div>
+        <div style="display:grid;gap:6px;flex:1;min-width:0">
+          <span style="font-size:14px;color:var(--nevoa)">Para que lado a figura olha?</span>
+          <div class="seg" role="group" aria-label="Lado para onde o significador olha" style="grid-template-columns:repeat(2,1fr)">
+            <button type="button" data-siglado="esq" id="sig-esq">Esquerda</button>
+            <button type="button" data-siglado="dir" id="sig-dir">Direita</button>
+          </div>
+          <p class="nota" id="sig-nota"></p>
+        </div>
+      </div>
+      <details class="como-sig">
+        <summary>Como Waite manda escolher</summary>
+        <ul>
+          <li><b>Para uma pessoa</b>, use uma carta da corte. Cavaleiro: homem de 40 anos ou mais. Rei: homem com menos de 40. Rainha: mulher com mais de 40. Valete: mulher mais jovem.</li>
+          <li><b>O naipe vai pela aparência.</b> Paus: pessoa muito clara, cabelo loiro ou ruivo, olhos azuis. Copas: cabelo castanho-claro ou loiro-escuro, olhos cinza ou azuis. Espadas: cabelo castanho-escuro, olhos avelã ou cinza, pele sem brilho. Ouros: cabelo castanho bem escuro ou preto, olhos escuros, pele morena ou amarelada.</li>
+          <li><b>O temperamento pode pesar mais.</b> Alguém muito moreno, mas muito enérgico, fica melhor em Espadas do que em Ouros. Alguém muito claro, mas indolente, em Copas em vez de Paus.</li>
+          <li><b>Para um assunto</b>, escolha o arcano maior ou a carta menor cujo significado combina com ele. Exemplo do livro: “será preciso um processo?” pede a Justiça; “vou ganhar meu processo?” pede uma carta da corte.</li>
+          <li><b>Depois</b>, com o significador na mesa, virado para cima, embaralhe e corte o resto do maço três vezes.</li>
+          <li><b>Na mesa</b>, a carta 6 fica do lado para onde o significador olha, e a 5 do lado oposto. Se a figura não olha para nenhum lado, decida antes de começar.</li>
+        </ul>
+      </details>
+    </div>
     <label class="campo" for="pergunta">Pergunta ou tema (opcional, mas melhora a leitura)
       <input type="text" id="pergunta" maxlength="240" placeholder="Ex.: Devo aceitar a proposta de contrato em março?">
     </label>
@@ -481,8 +518,47 @@ const JOGOS=[
  {k:"ppf",nome:"Passado · Presente · Futuro",sub:"3 cartas",cols:3,rows:1,desc:"Linha do tempo do tema: de onde vem, onde está, para onde tende se nada mudar.",pos:[["Passado","de onde a situação vem",1,1],["Presente","o estado atual",2,1],["Futuro","tendência se o rumo se mantiver",3,1]]},
  {k:"duas",nome:"Duas opções",sub:"5 cartas",cols:3,rows:3,desc:"Para escolher entre A e B. Defina na pergunta qual é a opção A e qual é a B antes de tirar.",pos:[["Momento atual","o contexto da escolha",2,3],["Opção A","como é seguir por A",1,2],["Resultado de A","tendência ao escolher A",1,1],["Opção B","como é seguir por B",3,2],["Resultado de B","tendência ao escolher B",3,1]]},
  {k:"ferradura",nome:"Ferradura",sub:"7 cartas",cols:5,rows:3,desc:"Panorama de uma questão com influências ocultas e conselho.",pos:[["Passado","o que levou até aqui",1,1],["Presente","o estado atual",1,2],["Influências ocultas","o que não está à vista",2,3],["Obstáculo","o que atrapalha",3,3],["Ambiente","pessoas e circunstâncias em volta",4,3],["Conselho","a atitude recomendada",5,2],["Resultado provável","para onde tende",5,1]]},
- {k:"celta",nome:"Cruz Celta",sub:"10 cartas",cols:4,rows:4,desc:"O método de Waite (1910), na ordem do livro: a 2 cruza a 1, a 3 coroa, a 4 é a base. Como no diagrama dele, o que ficou para trás (5) fica à direita da cruz e o que vem a seguir (6), à esquerda.",pos:[["O que cobre", "a influência geral sobre a questão, o ambiente em que as outras correntes atuam", 2, 2], ["O que cruza", "a natureza dos obstáculos; se a carta for favorável, a oposição não será séria", 2, 2, true], ["O que coroa", "o objetivo ou ideal do consulente; o melhor alcançável, ainda não realizado", 2, 1], ["A base", "o fundamento da questão, o que já se tornou realidade", 2, 3], ["O que ficou para trás", "a influência que acabou de passar ou está passando", 3, 2], ["O que vem a seguir", "a influência que começa a agir e atuará em breve", 1, 2], ["Você", "sua posição ou atitude na questão", 4, 4], ["Sua casa", "o ambiente e as tendências em ação nos outros envolvidos", 4, 3], ["Esperanças e medos", "o que você espera ou teme", 4, 2], ["O que virá", "o resultado final, a culminação das outras cartas", 4, 1]]}
+ {k:"celta",nome:"Cruz Celta",sub:"10 cartas",cols:4,rows:4,desc:"O método de Waite (1910), na ordem do livro: a 2 cruza a 1, a 3 coroa, a 4 é a base. A carta 6 (o que vem a seguir) fica do lado para onde o significador olha, e a 5 do lado oposto. Sem significador, vale o diagrama do livro, com a 6 à esquerda.",pos:[["O que cobre", "a influência geral sobre a questão, o ambiente em que as outras correntes atuam", 2, 2], ["O que cruza", "a natureza dos obstáculos; se a carta for favorável, a oposição não será séria", 2, 2, true], ["O que coroa", "o objetivo ou ideal do consulente; o melhor alcançável, ainda não realizado", 2, 1], ["A base", "o fundamento da questão, o que já se tornou realidade", 2, 3], ["O que ficou para trás", "a influência que acabou de passar ou está passando", 3, 2], ["O que vem a seguir", "a influência que começa a agir e atuará em breve", 1, 2], ["Você", "sua posição ou atitude na questão", 4, 4], ["Sua casa", "o ambiente e as tendências em ação nos outros envolvidos", 4, 3], ["Esperanças e medos", "o que você espera ou teme", 4, 2], ["O que virá", "o resultado final, a culminação das outras cartas", 4, 1]]}
 ];
+
+/* ---------- significador (Cruz Celta) ---------- */
+// lado para onde olha cada figura da corte no baralho de 1909; null = de frente
+const OLHA={32:"dir",33:"esq",34:"dir",35:"esq",46:"esq",47:"dir",48:"esq",49:"dir",60:"esq",61:"esq",62:"dir",63:null,74:"dir",75:"dir",76:"esq",77:null};
+const QUEM={11:"mulher com menos de 40",12:"homem de 40 ou mais",13:"mulher com mais de 40",14:"homem com menos de 40"};
+function montaSig(){
+  const sel=$("sig");if(sel.options.length>1)return;
+  const grupo=(rot,cs,f)=>{const g=document.createElement("optgroup");g.label=rot;
+    cs.forEach(c=>{const o=document.createElement("option");o.value=String(c.id);o.textContent=f(c);g.appendChild(o);});sel.appendChild(g);};
+  grupo("Cartas da corte, para uma pessoa",CARTAS.filter(c=>!c.maior&&c.rank>10),c=>c.nome+" · "+QUEM[c.rank]);
+  grupo("Arcanos maiores, para um assunto",CARTAS.filter(c=>c.maior),c=>c.nome);
+  grupo("Arcanos menores, para um assunto",CARTAS.filter(c=>!c.maior&&c.rank<=10),c=>c.nome);
+}
+function sigSalvo(){
+  try{const g=JSON.parse(localStorage.getItem("tarot-sig")||"null");
+    if(g&&Number.isInteger(g.id)&&g.id>=0&&g.id<78)return{id:g.id,lado:g.lado==="dir"?"dir":"esq"};}catch(e){}
+  return null;
+}
+function salvarSig(){
+  try{if(S.sig==null)localStorage.removeItem("tarot-sig");else localStorage.setItem("tarot-sig",JSON.stringify({id:S.sig,lado:S.sigLado}));}catch(e){}
+}
+// o significador só sai do maço na Cruz Celta; fora dela, volta para o maço
+function sincSig(){
+  const quer=(S.jogo==="celta"&&S.sig!=null)?S.sig:null;
+  if(S.sigFora===quer)return;
+  if(S.tiradas.length)recolher(true);
+  let voltou=false;
+  if(S.sigFora!=null){S.maco.unshift({id:S.sigFora,rev:false});S.sigFora=null;voltou=true;}
+  if(quer!=null){
+    const i=S.maco.findIndex(x=>x.id===quer);
+    if(i>=0)S.maco.splice(i,1);
+    else{const k=S.saltos.findIndex(x=>x.id===quer);if(k>=0)S.saltos.splice(k,1);}
+    S.sigFora=quer;
+  }
+  S.montes=null;S.ordemMontes=[];S.corte=null;S.cartaCorte=null;S.bases=null;
+  if(voltou){S.emb={overhand:0,riffle:0,mesa:0};S.reg.unshift("Significador devolvido ao maço: embaralhe de novo.");}
+  if(quer!=null)S.reg.unshift("Significador na mesa: "+CARTAS[quer].nome+". O maço fica com "+S.maco.length+" cartas.");
+  S.reg=S.reg.slice(0,12);
+}
 
 /* ---------- estado ---------- */
 function novoMaco(){return CARTAS.map(c=>({id:c.id,rev:false}));}
@@ -491,7 +567,8 @@ function estadoInicial(){return{
   jogo:"aberto",pergunta:"",inv:"real",prob:0.5,salto:false,fundo:false,
   maco:novoMaco(),emb:{overhand:0,riffle:0,mesa:0},reg:["Maço novo, na ordem de fábrica, todas as cartas de pé."],saltos:[],
   corteModo:"tres",divModo:"acaso",montes:null,ordemMontes:[],corte:null,cartaCorte:null,verBase:false,
-  tirarModo:"topo",tiradas:[],rodada:1,salvo:false,bases:null
+  tirarModo:"topo",tiradas:[],rodada:1,salvo:false,bases:null,
+  sig:null,sigLado:"esq",sigFora:null
 };}
 
 /* ---------- embaralhamentos ---------- */
@@ -684,11 +761,13 @@ function textoPrompt(){
   L.push("");
   L.push("Pergunta: "+(S.pergunta.trim()||"(sem pergunta específica)"));
   L.push("Jogo: "+j.nome+" ("+j.sub+")");
+  if(j.k==="celta"&&S.sigFora!=null)L.push("Significador: "+CARTAS[S.sigFora].nome+". Foi escolhido de propósito para representar o consulente ou o assunto e fica sob a carta 1; não é carta sorteada.");
   L.push("Invertidas: "+metodo);
   if(S.corte)L.push("Corte: "+S.corte);
   L.push("");L.push("Cartas:");
   S.tiradas.forEach((t,i)=>{const c=CARTAS[t.id],p=j.pos[i];
     L.push(`${i+1}. ${p[0]} (${p[1]}) — ${c.nome}, ${t.rev?"invertida":"na posição direita"}. Significado segundo Waite: ${t.rev?c.inv:c.dir}.`);});
+  if(j.k==="celta"&&S.tiradas[9]){const c10=CARTAS[S.tiradas[9].id];if(!c10.maior&&c10.rank>10)L.push("Observação de Waite: a carta 10 é da corte, então o desfecho depende sobretudo da pessoa que ela representa.");}
   const v=veredito();if(v){L.push("");L.push("Sim/Não pela convenção do app: "+YN_TXT[v.res]+". "+v.det+" Avalie se as cartas sustentam esse resultado.");}
   if(S.fundo&&S.maco.length){const c=CARTAS[S.maco[S.maco.length-1].id];L.push("Carta do fundo do maço (contexto): "+c.nome+(S.maco[S.maco.length-1].rev&&S.inv==="real"?", invertida":"")+".");}
   if(S.bases&&S.verBase)L.push("Cartas de baixo dos três montes do corte (contexto): "+S.bases.map(b=>CARTAS[b.id].nome).join("; ")+".");
@@ -706,6 +785,17 @@ function render(){
   // jogos
   $("lista-jogos").innerHTML=JOGOS.map(x=>`<button type="button" class="chip" data-jogo="${x.k}" aria-pressed="${x.k===S.jogo}">${esc(x.nome)} <small>${esc(x.sub)}</small></button>`).join("");
   $("desc-jogo").textContent=j.desc;
+  $("painel-sig").classList.toggle("oculto",j.k!=="celta");
+  if(j.k==="celta"){
+    $("sig").value=S.sig==null?"":String(S.sig);
+    $("sig-vis").classList.toggle("oculto",S.sig==null);
+    if(S.sig!=null){
+      $("sig-carta").innerHTML=htmlCarta({id:S.sig,rev:false,aberta:true});
+      document.querySelectorAll("[data-siglado]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.siglado===S.sigLado));
+      const o=OLHA[S.sig];
+      $("sig-nota").textContent=o?"O lado veio marcado pela figura desta carta. Confira e troque se discordar.":o===null?"Esta figura está de frente: Waite manda você decidir o lado antes de começar.":"Confira na carta para que lado a figura olha. Se não olhar para nenhum, Waite manda você decidir antes de começar.";
+    }
+  }
   if($("pergunta").value!==S.pergunta)$("pergunta").value=S.pergunta;
   document.querySelectorAll("[data-inv]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.inv===S.inv));
   $("desc-inv").innerHTML={real:"Como num baralho físico: uma carta só se inverte quando a metade do maço em que ela está é girada no riffle, ou quando o maço é espalhado na mesa. O maço fica guardado do jeito que estava entre uma leitura e outra, como um baralho de verdade.",carta:"Cada carta tirada tem 50% de chance de sair invertida, como jogar uma moeda, independente das outras. A quantidade de invertidas muda ao acaso a cada leitura.",off:"Todas as cartas são lidas na posição direita."}[S.inv];
@@ -713,7 +803,7 @@ function render(){
   // maço
   const tot=S.emb.overhand+S.emb.riffle+S.emb.mesa;
   $("pilha").innerHTML=Array.from({length:Math.min(6,Math.max(1,Math.ceil(S.maco.length/13)))},(_,k)=>`<div class="verso" style="transform:translate(${k*1.5}px,${-k*1.5}px)"></div>`).join("");
-  $("selo-cartas").textContent=S.maco.length+" cartas no maço";
+  $("selo-cartas").textContent=S.maco.length+" cartas no maço"+(S.sigFora!=null?" · significador na mesa":"");
   const est=$("selo-estado");
   if(tot===0){est.textContent="ainda não embaralhado";est.className="selo alerta";}
   else if(S.emb.riffle>=8||S.emb.mesa>=1){est.textContent="bem misturado";est.className="selo bom";}
@@ -761,8 +851,12 @@ function render(){
   const fator=j.k==="celta"?0.42:0;const cw=medidaCarta(j.cols,fator);
   const mesa=$("mesa");mesa.style.setProperty("--cw",cw+"px");mesa.style.columnGap=(fator?Math.round(cw*fator):10)+"px";
   mesa.style.gridTemplateColumns=`repeat(${j.cols},${cw}px)`;
+  const usaSig=j.k==="celta"&&S.sigFora!=null;const espelha=usaSig&&S.sigLado==="dir";
   mesa.innerHTML=j.pos.map((p,i)=>{const t=S.tiradas[i];const cruza=!!p[4];
-    return `<div class="slot${cruza?" cruza":""}" style="--c:${p[2]};--r:${p[3]}">${t?htmlCarta(t,{idx:i,cruza}):`<div class="vazio"></div>`}<div class="rot"><b>${i+1}</b> ${esc(p[0])}</div></div>`;}).join("");
+    const col=espelha&&i===4?1:espelha&&i===5?3:p[2];
+    let miolo=t?htmlCarta(t,{idx:i,cruza}):`<div class="vazio"${usaSig&&cruza?' style="visibility:hidden"':""}></div>`;
+    if(usaSig&&i===0)miolo=`<div class="com-sig${t?" coberto":""}"><div class="sig-fundo">${htmlCarta({id:S.sigFora,rev:false,aberta:true})}</div>${t?htmlCarta(t,{idx:0}):""}</div>`;
+    return `<div class="slot${cruza?" cruza":""}" style="--c:${col};--r:${p[3]}">${miolo}<div class="rot"><b>${i+1}</b> ${esc(p[0])}${usaSig&&i===0?" o significador":""}</div></div>`;}).join("");
   const todas=S.tiradas.length===j.pos.length&&S.tiradas.every(t=>t.aberta);
   $("b-revelar").disabled=!S.tiradas.length||todas;
   $("dica-mesa").textContent=S.tiradas.length?(todas?"Todas reveladas.":"Toque numa carta para virá-la."):(avisos.length?"Atenção: "+avisos.join(" e ")+". Pode tirar assim mesmo.":"Pronto para tirar.");
@@ -777,6 +871,11 @@ function render(){
     let fh="<h3>Fatos da tiragem</h3>"+fatos().map(x=>`<div>${x}</div>`).join("");
     if(S.fundo&&S.maco.length){const b=S.maco[S.maco.length-1];fh+=`<div>Carta do fundo do maço: <b>${esc(CARTAS[b.id].nome)}</b>${S.inv==="real"&&b.rev?" (invertida)":""}.</div>`;}
     if(S.saltos.length)fh+=`<div>Saltaram: ${S.saltos.map(b=>"<b>"+esc(CARTAS[b.id].nome)+"</b>").join(", ")}.</div>`;
+    if(j.k==="celta"){
+      if(S.sigFora!=null)fh+=`<div>Significador: <b>${esc(CARTAS[S.sigFora].nome)}</b>, escolhido por você, fora da tiragem.</div>`;
+      const c10=CARTAS[S.tiradas[9].id];const corte10=!c10.maior&&c10.rank>10;
+      fh+=`<div style="margin-top:6px">${corte10?"A carta 10 é da corte: para Waite, o desfecho fica nas mãos da pessoa que ela representa. Ele manda fazer nova tiragem com essa carta como significador.":"Se a carta 10 não deixar o desfecho claro, Waite manda repetir a tiragem com ela como significador."}</div><div><button class="btn" type="button" data-sig10="1" style="margin-top:4px">Nova tiragem com ${esc(c10.nome)} como significador</button></div>`;
+    }
     $("fatos").innerHTML=fh;
     $("prompt").value=textoPrompt();
     $("b-salvar").disabled=S.salvo;
@@ -789,7 +888,9 @@ function render(){
 document.addEventListener("error",e=>{const el=e.target;if(!el||el.tagName!=="IMG")return;if(el.dataset.hd){el.removeAttribute("data-hd");el.src=el.dataset.leve;return;}if(el.dataset.c)el.remove();},true);
 document.addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
-  if(b.dataset.jogo){if(S.tiradas.length)recolher(true);S.jogo=b.dataset.jogo;render();return;}
+  if(b.dataset.jogo){if(S.tiradas.length)recolher(true);S.jogo=b.dataset.jogo;sincSig();render();return;}
+  if(b.dataset.siglado){S.sigLado=b.dataset.siglado;salvarSig();render();return;}
+  if(b.dataset.sig10!=null){const t10=S.tiradas[9];if(t10&&S.jogo==="celta"){S.sig=t10.id;S.sigLado=OLHA[t10.id]||"esq";salvarSig();sincSig();render();$("s-jogo").scrollIntoView({behavior:"smooth",block:"start"});}return;}
   if(b.dataset.inv){S.inv=b.dataset.inv;render();return;}
   if(b.dataset.emb){embaralhar(b.dataset.emb);return;}
   if(b.dataset.corte){S.corteModo=b.dataset.corte;render();return;}
@@ -804,7 +905,12 @@ $("pergunta").addEventListener("input",e=>{S.pergunta=e.target.value;if(!$("leit
 $("opt-salto").addEventListener("change",e=>{S.salto=e.target.checked;render();});
 $("opt-fundo").addEventListener("change",e=>{S.fundo=e.target.checked;render();});
 $("opt-base").addEventListener("change",e=>{S.verBase=e.target.checked;render();});
-$("b-novo").addEventListener("click",()=>{const keep={jogo:S.jogo,pergunta:S.pergunta,inv:S.inv,prob:S.prob,salto:S.salto,fundo:S.fundo,corteModo:S.corteModo,divModo:S.divModo,tirarModo:S.tirarModo};S=Object.assign(estadoInicial(),keep);render();});
+$("b-novo").addEventListener("click",()=>{const keep={jogo:S.jogo,pergunta:S.pergunta,inv:S.inv,prob:S.prob,salto:S.salto,fundo:S.fundo,corteModo:S.corteModo,divModo:S.divModo,tirarModo:S.tirarModo,sig:S.sig,sigLado:S.sigLado};S=Object.assign(estadoInicial(),keep);sincSig();render();});
+$("sig").addEventListener("change",e=>{
+  const v=e.target.value;S.sig=v===""?null:+v;
+  if(S.sig!=null)S.sigLado=OLHA[S.sig]||"esq";
+  salvarSig();sincSig();render();
+});
 $("b-dividir").addEventListener("click",dividir);
 $("m1").addEventListener("input",ajustaMontesUI);
 $("m2").addEventListener("input",ajustaMontesUI);
@@ -876,6 +982,7 @@ function lsSet(a){try{localStorage.setItem("tarot-diario",JSON.stringify(a));ret
 function registroAtual(){const j=jogo();const v=veredito();
   return{ts:Date.now(),jogo:j.k,pergunta:S.pergunta.trim(),inv:S.inv,corte:S.corte||"",yn:v?v.res:"",
     cartas:S.tiradas.map((t,i)=>({id:t.id,rev:t.rev,pos:j.pos[i][0]})),
+    sig:(j.k==="celta"&&S.sigFora!=null)?S.sigFora:null,
     extra:{fundo:S.fundo&&S.maco.length?S.maco[S.maco.length-1].id:null,saltos:S.saltos.map(s=>s.id)}};}
 function renderDiario(lista){
   $("backup").classList.toggle("oculto",!!colecao);
@@ -883,7 +990,7 @@ function renderDiario(lista){
   if(!lista.length){$("diario").innerHTML='<p class="vazio-txt">Nenhuma leitura salva ainda.</p>';return;}
   $("diario").innerHTML=lista.map(r=>{const j=JOGOS.find(x=>x.k===r.jogo)||{nome:r.jogo,sub:""};
     const d=new Date(r.ts);const data=d.toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"})+" · "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-    return `<details><summary>${esc(j.nome)} ${r.yn?`<span class="tag yn-${r.yn}">${YN_TXT[r.yn]}</span>`:""}<small>${esc(data)}${r.pergunta?" · "+esc(r.pergunta):""}</small></summary><ul>${(r.cartas||[]).map(c=>`<li>${esc(c.pos)}: <b>${esc(CARTAS[c.id].nome)}</b>${c.rev?" (invertida)":""}</li>`).join("")}</ul>${r.corte?`<p class="nota">${esc(r.corte)}</p>`:""}</details>`;}).join("");
+    return `<details><summary>${esc(j.nome)} ${r.yn?`<span class="tag yn-${r.yn}">${YN_TXT[r.yn]}</span>`:""}<small>${esc(data)}${r.pergunta?" · "+esc(r.pergunta):""}</small></summary><ul>${(r.cartas||[]).map(c=>`<li>${esc(c.pos)}: <b>${esc(CARTAS[c.id].nome)}</b>${c.rev?" (invertida)":""}</li>`).join("")}</ul>${Number.isInteger(r.sig)&&CARTAS[r.sig]?`<p class="nota">Significador: ${esc(CARTAS[r.sig].nome)}</p>`:""}${r.corte?`<p class="nota">${esc(r.corte)}</p>`:""}</details>`;}).join("");
 }
 async function carregarDiario(){
   if(colecao){
@@ -950,7 +1057,7 @@ function macoSalvo(){
 }
 function salvarMaco(){
   // guarda o maço como ficaria recolhido: cartas da mesa por cima, como estavam fisicamente
-  try{const todo=S.tiradas.map(t=>({id:t.id,rev:t.fis})).concat(S.saltos,S.maco);
+  try{const todo=(S.sigFora!=null?[{id:S.sigFora,rev:false}]:[]).concat(S.tiradas.map(t=>({id:t.id,rev:t.fis})),S.saltos,S.maco);
     if(todo.length===78)localStorage.setItem("tarot-maco",JSON.stringify(todo.map(x=>({id:x.id,rev:x.rev?1:0}))));}catch(e){}
 }
 function start(dados){
@@ -958,6 +1065,8 @@ function start(dados){
   S=Object.assign(estadoInicial(),temHot?dados.S:{});
   S.prob=0.5;if(!S.divModo)S.divModo="acaso";
   if(!temHot){const m=macoSalvo();if(m){S.maco=m;S.reg=["Maço do jeito que ficou na última leitura."];}}
+  if(!temHot){const g=sigSalvo();if(g){S.sig=g.id;S.sigLado=g.lado;}}
+  montaSig();
   render();renderDiario(lsGet());
 }
 try{const hot=window.claude&&window.claude.hot;if(hot&&hot.snapshot)hot.snapshot(()=>({S}));
