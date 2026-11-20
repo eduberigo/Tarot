@@ -177,6 +177,12 @@ footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;fon
 .como-sig summary{cursor:pointer;color:var(--texto);font-weight:500}
 .como-sig ul{margin:8px 0 0;padding-left:1.1em;display:grid;gap:5px}
 .como-sig b{color:var(--texto);font-weight:500}
+.waite{grid-column:1/-1;border-top:1px solid rgba(255,255,255,.08);padding-top:8px}
+.waite summary{cursor:pointer;font-size:14.5px;color:var(--ouro-2)}
+.w-corpo{display:grid;gap:10px;margin-top:8px;max-width:65ch}
+.w-corpo p,.item .w-corpo p{margin:0;font-size:15.5px;line-height:1.55}
+.w-corpo b{color:var(--ouro-2);font-weight:500}
+.zoom .palco #zoom-waite{align-self:start;justify-self:center;text-align:left;margin:0;padding:2px 2px 14px}
 .oculto{display:none!important}
 </style>
 </head>
@@ -389,13 +395,14 @@ footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;fon
     <div class="palco" id="zoom-palco"></div>
     <div class="rodape">
       <p id="zoom-texto"></p>
-      <div class="linha"><button type="button" class="btn" id="zoom-girar">Ver de pé</button><span class="nota">Use dois dedos para aproximar.</span></div>
+      <div class="linha"><button type="button" class="btn" id="zoom-ler">Ler o texto de Waite</button><button type="button" class="btn" id="zoom-girar">Ver de pé</button><span class="nota" id="zoom-dica">Use dois dedos para aproximar.</span></div>
     </div>
   </div>
 
-  <footer>Imagens: baralho de 1909 de Pamela Colman Smith, domínio público (digitalização “Pam-A” restaurada por Steve P.). Significados: A. E. Waite, <i>The Pictorial Key to the Tarot</i> (1910), traduzidos e condensados. Aleatoriedade: gerador criptográfico do navegador.</footer>
+  <footer>Imagens: baralho de 1909 de Pamela Colman Smith, domínio público (digitalização “Pam-A” restaurada por Steve P.). Texto e significados: A. E. Waite, <i>The Pictorial Key to the Tarot</i> (1910), em tradução feita para este app; as palavras-chave são um resumo dela. Aleatoriedade: gerador criptográfico do navegador.</footer>
 </div>
 
+<script src="waite.js"></script>
 <script>
 "use strict";
 /* ---------- aleatoriedade ---------- */
@@ -458,7 +465,7 @@ paus:[
 ["homem moreno, amigável, do campo, geralmente casado, honesto e consciencioso; sempre indica honestidade; pode trazer notícia de uma herança inesperada em breve","bom, mas severo; austero, porém tolerante","ST"]],
 copas:[
 ["casa do coração verdadeiro, alegria, contentamento, morada, nutrição, abundância, fertilidade; a Mesa Sagrada e sua felicidade","casa do coração falso, mudança, instabilidade, revolução","SN"],
-["amor, paixão, amizade, afinidade, união, concórdia, simpatia, a relação entre os sexos","luxúria, cobiça, ciúme, vontade, desejo","SN"],
+["amor, paixão, amizade, afinidade, união, concórdia, simpatia, a relação entre os sexos","o livro de Waite não dá significado invertido para esta carta","ST"],
 ["conclusão de qualquer assunto em fartura, perfeição e alegria; desfecho feliz, vitória, realização, consolo, cura","rapidez, despacho, realização, fim; também o lado do excesso nos prazeres físicos e dos sentidos","ST"],
 ["cansaço, desgosto, aversão, aborrecimentos imaginários, como se o vinho deste mundo só trouxesse saciedade; também prazer misturado","novidade, presságio, nova instrução, novas relações","NS"],
 ["perda, mas algo resta: três se foram, duas ficam; herança, patrimônio, transmissão, mas abaixo do esperado; para alguns, casamento, mas não sem amargura ou frustração","notícias, alianças, afinidade, consanguinidade, ancestralidade, retorno, projetos falsos","NT"],
@@ -563,6 +570,7 @@ function sincSig(){
 /* ---------- estado ---------- */
 function novoMaco(){return CARTAS.map(c=>({id:c.id,rev:false}));}
 let S=null;
+const wAbertos=new Set(); // textos de Waite abertos na leitura
 function estadoInicial(){return{
   jogo:"aberto",pergunta:"",inv:"real",prob:0.5,salto:false,fundo:false,
   maco:novoMaco(),emb:{overhand:0,riffle:0,mesa:0},reg:["Maço novo, na ordem de fábrica, todas as cartas de pé."],saltos:[],
@@ -655,6 +663,7 @@ function recolher(silencioso){
   S.maco=volta.concat(saltos,S.maco);S.tiradas=[];S.saltos=[];
   S.emb={overhand:0,riffle:0,mesa:0};S.corte=null;S.montes=null;S.ordemMontes=[];S.cartaCorte=null;S.bases=null;S.rodada++;S.salvo=false;
   S.reg.unshift("Cartas recolhidas por cima do maço.");S.reg=S.reg.slice(0,12);
+  wAbertos.clear();
   ["gemma-saida","claude-saida"].forEach(id=>{const el=$(id);if(el)el.textContent="";});
   if(!silencioso)render();
 }
@@ -776,6 +785,16 @@ function textoPrompt(){
   return L.join("\n");
 }
 
+/* ---------- texto de Waite ---------- */
+const WAITE=(typeof window!=="undefined"&&Array.isArray(window.WAITE)&&window.WAITE.length===78)?window.WAITE:null;
+function cap(x){return x.charAt(0).toUpperCase()+x.slice(1);}
+function htmlWaiteCorpo(id,rev){
+  const w=WAITE&&WAITE[id];if(!w)return"";const c=CARTAS[id];
+  const u=w.u||cap(c.dir)+".",r=w.r||cap(c.inv)+".";
+  return w.d.map(x=>`<p>${esc(x)}</p>`).join("")+
+    `<p><b>Significados divinatórios${rev?"":" (como saiu)"}:</b> ${esc(u)}</p><p><b>Invertida${rev?" (como saiu)":""}:</b> ${esc(r)}</p>`;
+}
+
 /* ---------- render ---------- */
 function $(id){return document.getElementById(id);}
 function medidaCarta(cols,fator){const w=Math.min(760,document.documentElement.clientWidth)-80;const g=fator?fator:0;const cw=g?Math.floor(w/(cols+g*(cols-1))):Math.floor((w-(cols-1)*10)/cols);return Math.max(46,Math.min(112,cw));}
@@ -867,7 +886,7 @@ function render(){
     const v=veredito();
     $("veredito").innerHTML=v?`<div class="veredito ${{S:"sim",N:"nao",T:"talvez"}[v.res]}"><span class="pos" style="font-size:12.5px;color:var(--nevoa);letter-spacing:.04em;text-transform:uppercase">Resposta pela convenção</span><span class="grande">${v.res==="T"?(j.k==="sn3"?"Indefinido":"Talvez"):YN_TXT[v.res]}</span><span class="nota">${esc(v.det)} Waite não define sim ou não: a tendência de cada carta é uma convenção do app, tirada dos significados dele.</span></div>`:"";
     $("itens").innerHTML=S.tiradas.map((t,i)=>{const c=CARTAS[t.id],p=j.pos[i];
-      return `<div class="item">${htmlCarta(t,{aberta:true,zoom:i})}<div><div class="pos">${i+1} · ${esc(p[0])}</div><h3>${esc(c.nome)} <span class="tag ${t.rev?"inv":"dir"}">${t.rev?"invertida":"direita"}</span>${j.sn?` <span class="tag yn-${ynCarta(t)}">${YN_TXT[ynCarta(t)]}</span>`:""}</h3><p>${esc(t.rev?c.inv:c.dir)}.</p><p class="desc-pos">Na posição: ${esc(p[1])}.${c.maior?" "+esc(c.attr)+" (Golden Dawn).":" "+esc(NAIPES.find(x=>x.k===c.naipe).el)+"."}</p></div></div>`;}).join("");
+      return `<div class="item">${htmlCarta(t,{aberta:true,zoom:i})}<div><div class="pos">${i+1} · ${esc(p[0])}</div><h3>${esc(c.nome)} <span class="tag ${t.rev?"inv":"dir"}">${t.rev?"invertida":"direita"}</span>${j.sn?` <span class="tag yn-${ynCarta(t)}">${YN_TXT[ynCarta(t)]}</span>`:""}</h3><p>${esc(t.rev?c.inv:c.dir)}.</p><p class="desc-pos">Na posição: ${esc(p[1])}.${c.maior?" "+esc(c.attr)+" (Golden Dawn).":" "+esc(NAIPES.find(x=>x.k===c.naipe).el)+"."}</p></div>${WAITE?`<details class="waite" data-i="${i}"${wAbertos.has(i)?" open":""}><summary>Texto de Waite sobre esta carta</summary><div class="w-corpo">${htmlWaiteCorpo(t.id,t.rev)}</div></details>`:""}</div>`;}).join("");
     let fh="<h3>Fatos da tiragem</h3>"+fatos().map(x=>`<div>${x}</div>`).join("");
     if(S.fundo&&S.maco.length){const b=S.maco[S.maco.length-1];fh+=`<div>Carta do fundo do maço: <b>${esc(CARTAS[b.id].nome)}</b>${S.inv==="real"&&b.rev?" (invertida)":""}.</div>`;}
     if(S.saltos.length)fh+=`<div>Saltaram: ${S.saltos.map(b=>"<b>"+esc(CARTAS[b.id].nome)+"</b>").join(", ")}.</div>`;
@@ -920,7 +939,9 @@ $("b-cortar-acaso").addEventListener("click",()=>{const n=S.maco.length;cortarEm
 $("b-distribuir").addEventListener("click",distribuir);
 $("b-revelar").addEventListener("click",()=>{S.tiradas.forEach(t=>t.aberta=true);document.querySelectorAll("#mesa .carta").forEach(el=>el.classList.add("aberta"));setTimeout(render,650);});
 $("b-recolher").addEventListener("click",()=>{recolher(false);$("s-maco").scrollIntoView({behavior:"smooth",block:"start"});});
-window.addEventListener("resize",()=>{clearTimeout(window.__rz);window.__rz=setTimeout(render,150);});
+let larguraAnt=window.innerWidth;
+window.addEventListener("resize",()=>{if(window.innerWidth===larguraAnt)return;larguraAnt=window.innerWidth;clearTimeout(window.__rz);window.__rz=setTimeout(render,150);});
+document.addEventListener("toggle",e=>{const d=e.target;if(d&&d.classList&&d.classList.contains("waite")){const i=+d.dataset.i;if(d.open)wAbertos.add(i);else wAbertos.delete(i);}},true);
 
 $("b-copiar").addEventListener("click",async()=>{
   const txt=$("prompt").value;
@@ -935,13 +956,23 @@ function abrirZoom(i){
   const t=S.tiradas[i];if(!t)return;const c=CARTAS[t.id],j=jogo(),p=j.pos[i];const n=String(t.id).padStart(2,"0");
   zoomAtual={rev:t.rev,emPe:false};zoomVoltar=document.activeElement;
   $("zoom-nome").textContent=(i+1)+" · "+p[0]+" — "+c.nome+(t.rev?" (invertida)":"");
-  $("zoom-palco").innerHTML=`<img data-hd="1" data-leve="cards/${n}.webp" src="cards/hd/${n}.webp" alt="${esc(c.nome)}"${t.rev?' class="inv"':""}>`;
+  $("zoom-palco").innerHTML=`<img data-hd="1" data-leve="cards/${n}.webp" src="cards/hd/${n}.webp" alt="${esc(c.nome)}"${t.rev?' class="inv"':""}>`+(WAITE?`<div id="zoom-waite" class="w-corpo oculto">${htmlWaiteCorpo(t.id,t.rev)}</div>`:"");
+  $("zoom-ler").classList.toggle("oculto",!WAITE);$("zoom-ler").textContent="Ler o texto de Waite";$("zoom-dica").classList.remove("oculto");$("zoom-texto").classList.remove("oculto");
   $("zoom-texto").textContent=(t.rev?c.inv:c.dir)+".";
   $("zoom-girar").classList.toggle("oculto",!t.rev);$("zoom-girar").textContent="Ver de pé";
   $("zoom").hidden=false;document.body.style.overflow="hidden";$("zoom-fechar").focus();
 }
 function fecharZoom(){$("zoom").hidden=true;document.body.style.overflow="";$("zoom-palco").innerHTML="";if(zoomVoltar&&zoomVoltar.focus)zoomVoltar.focus();}
 $("zoom-fechar").addEventListener("click",fecharZoom);
+$("zoom-ler").addEventListener("click",()=>{
+  const w=$("zoom-waite"),im=$("zoom-palco").querySelector("img");if(!w)return;
+  const abrir=w.classList.contains("oculto");
+  w.classList.toggle("oculto",!abrir);if(im)im.classList.toggle("oculto",abrir);
+  $("zoom-ler").textContent=abrir?"Ver a carta":"Ler o texto de Waite";
+  $("zoom-girar").classList.toggle("oculto",abrir||!zoomAtual||!zoomAtual.rev);
+  $("zoom-dica").classList.toggle("oculto",abrir);$("zoom-texto").classList.toggle("oculto",abrir);
+  $("zoom-palco").scrollTop=0;
+});
 $("zoom").addEventListener("click",e=>{if(e.target.id==="zoom"||e.target.id==="zoom-palco")fecharZoom();});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("zoom").hidden)fecharZoom();});
 $("zoom-girar").addEventListener("click",()=>{if(!zoomAtual)return;zoomAtual.emPe=!zoomAtual.emPe;const im=$("zoom-palco").querySelector("img");if(im)im.classList.toggle("inv",!zoomAtual.emPe);$("zoom-girar").textContent=zoomAtual.emPe?"Ver como saiu":"Ver de pé";});
