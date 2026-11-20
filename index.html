@@ -183,6 +183,7 @@ footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;fon
 .w-corpo p,.item .w-corpo p{margin:0;font-size:15.5px;line-height:1.55}
 .w-corpo b{color:var(--ouro-2);font-weight:500}
 .zoom .palco #zoom-waite{align-self:start;justify-self:center;text-align:left;margin:0;padding:2px 2px 14px}
+.w-corpo p.w-aviso,.item .w-corpo p.w-aviso{color:var(--nevoa);font-size:13.5px}
 .oculto{display:none!important}
 </style>
 </head>
@@ -224,9 +225,23 @@ footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;fon
         </ul>
       </details>
     </div>
-    <label class="campo" for="pergunta">Pergunta ou tema (opcional, mas melhora a leitura)
+    <label class="campo" for="pergunta">Pergunta (opcional, mas melhora a leitura)
       <input type="text" id="pergunta" maxlength="240" placeholder="Ex.: Devo aceitar a proposta de contrato em março?">
     </label>
+    <label class="campo" for="tema">Tema (opcional)
+      <select id="tema">
+        <option value="">Não informar</option>
+        <option value="amor">Amor e relacionamentos</option>
+        <option value="trabalho">Trabalho e negócios</option>
+        <option value="dinheiro">Dinheiro e bens</option>
+        <option value="justica">Justiça e processos</option>
+        <option value="saude">Saúde</option>
+        <option value="familia">Família e casa</option>
+        <option value="viagem">Viagem e mudança</option>
+        <option value="espirito">Vida espiritual</option>
+      </select>
+    </label>
+    <p class="nota">O tema não muda as cartas. Ele entra no prompt da IA, para ela escolher, entre as leituras de Waite, as que tratam desse assunto, e fica anotado no diário.</p>
     <div class="campo" style="display:grid;gap:6px">
       <span style="font-size:14px;color:var(--nevoa)">Cartas invertidas</span>
       <div class="seg" role="group" aria-label="Modo das invertidas" id="seg-inv">
@@ -334,6 +349,9 @@ footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;fon
         <h3>Interpretar com IA</h3>
         <p class="nota">O prompt abaixo já leva pergunta, posições, cartas, orientação e as regras de leitura calibrada.</p>
         <textarea id="prompt" readonly aria-label="Prompt da leitura"></textarea>
+        <label class="toggle" for="opt-completo" id="lab-completo"><input type="checkbox" id="opt-completo">
+          <span>Incluir o texto completo de Waite<small>Leva a descrição de cada carta, os significados sem resumo e os adicionais. Fica bem mais longo: se o modelo do celular cortar a resposta ou der erro, desmarque.</small></span></label>
+        <p class="nota" id="prompt-tam"></p>
         <div class="linha">
           <button class="btn forte" type="button" id="b-copiar">Copiar prompt</button>
           <span class="nota" id="copiado" aria-live="polite"></span>
@@ -350,6 +368,7 @@ footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;fon
           <summary>Gemma dentro desta página (experimental)</summary>
           <div style="display:grid;gap:8px;margin-top:8px">
             <p class="nota">Roda o modelo no navegador via WebGPU, a partir de um arquivo de modelo já salvo no aparelho (formato web <b>.litertlm</b> ou <b>.task</b>, ex.: Gemma 3n E2B Web, ~3 GB). Na primeira vez precisa de internet para baixar o motor (cerca de 26 MB); depois ele fica guardado no aparelho.</p>
+            <p class="nota">Aqui o prompt vai sempre na versão resumida, para caber na memória do modelo.</p>
             <label class="campo" for="arq-modelo">Arquivo do modelo
               <input type="file" id="arq-modelo" accept=".litertlm,.task,.bin">
             </label>
@@ -465,7 +484,7 @@ paus:[
 ["homem moreno, amigável, do campo, geralmente casado, honesto e consciencioso; sempre indica honestidade; pode trazer notícia de uma herança inesperada em breve","bom, mas severo; austero, porém tolerante","ST"]],
 copas:[
 ["casa do coração verdadeiro, alegria, contentamento, morada, nutrição, abundância, fertilidade; a Mesa Sagrada e sua felicidade","casa do coração falso, mudança, instabilidade, revolução","SN"],
-["amor, paixão, amizade, afinidade, união, concórdia, simpatia, a relação entre os sexos","o livro de Waite não dá significado invertido para esta carta","ST"],
+["amor, paixão, amizade, afinidade, união, concórdia, simpatia, a relação entre os sexos","sem significado invertido na parte principal do livro; nos significados adicionais de Waite: paixão","ST"],
 ["conclusão de qualquer assunto em fartura, perfeição e alegria; desfecho feliz, vitória, realização, consolo, cura","rapidez, despacho, realização, fim; também o lado do excesso nos prazeres físicos e dos sentidos","ST"],
 ["cansaço, desgosto, aversão, aborrecimentos imaginários, como se o vinho deste mundo só trouxesse saciedade; também prazer misturado","novidade, presságio, nova instrução, novas relações","NS"],
 ["perda, mas algo resta: três se foram, duas ficam; herança, patrimônio, transmissão, mas abaixo do esperado; para alguns, casamento, mas não sem amargura ou frustração","notícias, alianças, afinidade, consanguinidade, ancestralidade, retorno, projetos falsos","NT"],
@@ -572,7 +591,7 @@ function novoMaco(){return CARTAS.map(c=>({id:c.id,rev:false}));}
 let S=null;
 const wAbertos=new Set(); // textos de Waite abertos na leitura
 function estadoInicial(){return{
-  jogo:"aberto",pergunta:"",inv:"real",prob:0.5,salto:false,fundo:false,
+  jogo:"aberto",pergunta:"",tema:"",completo:false,inv:"real",prob:0.5,salto:false,fundo:false,
   maco:novoMaco(),emb:{overhand:0,riffle:0,mesa:0},reg:["Maço novo, na ordem de fábrica, todas as cartas de pé."],saltos:[],
   corteModo:"tres",divModo:"acaso",montes:null,ordemMontes:[],corte:null,cartaCorte:null,verBase:false,
   tirarModo:"topo",tiradas:[],rodada:1,salvo:false,bases:null,
@@ -738,12 +757,31 @@ function veredito(){
   const res=saldo>0?"S":saldo<0?"N":"T";
   return{res,det:"Votos: "+vs.map(v=>YN_TXT[v]).join(", ")+" · saldo "+(saldo>0?"+":"")+saldo+"."};
 }
+// Waite, seção 5: repetição de cartas na tiragem. Por valor (1=Ás … 14=Rei): [2 cartas, 3 cartas, 4 cartas]
+const RANK_PL={1:"Ases",2:"Dois",3:"Três",4:"Quatros",5:"Cincos",6:"Seis",7:"Setes",8:"Oitos",9:"Noves",10:"Dez",11:"Valetes",12:"Cavaleiros",13:"Rainhas",14:"Reis"};
+const RECORR={nat:{
+ 14:["conselho menor","consulta","grande honra"],13:["amigos sinceros","engano por mulheres","grande debate"],
+ 12:["intimidade","debate animado","assuntos sérios"],11:["inquietação","disputa","doença perigosa"],
+ 10:["mudança","nova condição","condenação"],9:["recebimento","sucesso","um bom amigo"],
+ 8:["novo conhecimento","casamento","revés"],7:["notícias","enfermidade","intriga"],
+ 6:["irritabilidade","sucesso","abundância"],5:["vigílias","determinação","regularidade"],
+ 4:["insônia","um assunto para reflexão","viagem próxima"],3:["calma","unidade","progresso"],
+ 2:["acordo","segurança","contenda"],1:["trapaça","pequeno sucesso","chance favorável"]},
+inv:{
+ 14:["projetos","comércio","rapidez"],13:["trabalho","gula","má companhia"],
+ 12:["suscetibilidade","um duelo ou encontro pessoal","aliança"],11:["sociedade","ociosidade","privação"],
+ 10:["expectativa justificada","decepção","acontecimento"],9:["um pequeno lucro","imprudência","usura"],
+ 8:["infortúnio","um espetáculo","erro"],7:["mulheres de má reputação","alegria","briguentos"],
+ 6:["queda","satisfação","preocupação"],5:["revés","hesitação","ordem"],
+ 4:["disputa","inquietação","passeios"],3:["segurança","serenidade","grande sucesso"],
+ 2:["desconfiança","apreensão","reconciliação"],1:["inimigos","devassidão","desonra"]}};
+const TEMAS={amor:"Amor e relacionamentos",trabalho:"Trabalho e negócios",dinheiro:"Dinheiro e bens",justica:"Justiça e processos",saude:"Saúde",familia:"Família e casa",viagem:"Viagem e mudança",espirito:"Vida espiritual"};
 function fatos(){
   const ts=S.tiradas.map(t=>({t,c:CARTAS[t.id]}));
   const n=ts.length,maiores=ts.filter(x=>x.c.maior).length,inv=ts.filter(x=>x.t.rev).length;
   const por={};ts.filter(x=>!x.c.maior).forEach(x=>{por[x.c.naipe]=(por[x.c.naipe]||0)+1;});
   const cortes=ts.filter(x=>!x.c.maior&&x.c.rank>10).length;
-  const nums={};ts.filter(x=>!x.c.maior&&x.c.rank<=10).forEach(x=>{nums[x.c.rank]=(nums[x.c.rank]||0)+1;});
+  const rep={};ts.filter(x=>!x.c.maior).forEach(x=>{(rep[x.c.rank]=rep[x.c.rank]||[]).push(x.t.rev);});
   const linhas=[];
   linhas.push(`Arcanos maiores: <b>${maiores}</b> de ${n}${n>=3?(maiores/n>=.5?" — proporção alta; a tradição lê como tema de peso ou fora do controle imediato":maiores===0?" — nenhum; a tradição lê como questão do dia a dia, mais manejável":""):""}.`);
   if(S.inv!=="off")linhas.push(`Invertidas: <b>${inv}</b> de ${n}.`);
@@ -751,17 +789,24 @@ function fatos(){
   if(ns.length)linhas.push("Naipes: "+ns.join(" · ")+".");
   if(n>=3){const dom=NAIPES.filter(x=>(por[x.k]||0)>=Math.max(2,Math.ceil(n*.4)));dom.forEach(x=>linhas.push(`Predomínio de ${x.nome} (${x.el}): ${x.tema}.`));}
   if(cortes>=2)linhas.push(`Cartas da corte: <b>${cortes}</b> — costumam indicar pessoas envolvidas ou papéis que você assume.`);
-  Object.entries(nums).filter(([,v])=>v>=2).forEach(([k,v])=>linhas.push(`Número repetido: ${v}× o ${k==="1"?"Ás":k}.`));
+  Object.entries(rep).filter(([,v])=>v.length>=2).forEach(([k,v])=>{
+    const a=RECORR.nat[k][v.length-2],b=RECORR.inv[k][v.length-2],tit=`Cartas repetidas, segundo Waite: <b>${v.length} ${RANK_PL[k]}</b>`;
+    if(v.every(r=>!r))linhas.push(`${tit}, de pé: ${a}.`);
+    else if(v.every(r=>r))linhas.push(`${tit}, em posição invertida: ${b}.`);
+    else linhas.push(`${tit}. De pé: ${a}; em posição invertida: ${b}. Aqui saíram misturados, caso que Waite não trata.`);});
   return linhas;
 }
-function textoPrompt(){
-  const j=jogo();
+function textoPrompt(completo){
+  if(completo===undefined)completo=!!S.completo;
+  const j=jogo();const tema=TEMAS[S.tema]||"";
   const metodo={real:"como na mesa (invertidas surgem de metades giradas e da mistura na mesa)",carta:"sorteio independente por carta, 50% (moeda)",off:"sem invertidas"}[S.inv];
   const L=[];
   L.push("Você é um leitor de tarô Rider-Waite. Interprete a tiragem abaixo com rigor técnico.");
   L.push("Regras:");
   L.push("- Base: significados divinatórios de A. E. Waite (The Pictorial Key to the Tarot, 1910). Diga quando estiver indo além deles.");
   L.push("- Waite muitas vezes lista leituras alternativas ou contraditórias para a mesma carta: diga qual se aplica à posição e por quê.");
+  if(tema)L.push("- O tema foi informado: entre as leituras de Waite, priorize as que tratam desse assunto. Se nenhuma tratar, diga isso.");
+  if(completo&&WAITE)L.push("- Abaixo vai o texto completo de Waite para cada carta. Os significados adicionais, segundo o próprio Waite, muitas vezes discordam dos principais: use-os só como complemento.");
   L.push("- Leia carta por carta, sempre em função da posição.");
   L.push("- Separe: significado tradicional / leitura provável na posição / hipóteses.");
   L.push("- Evite frases genéricas que serviriam para qualquer pessoa, não force coerência entre as cartas e não use linguagem de elogio nem de alarme.");
@@ -769,13 +814,21 @@ function textoPrompt(){
   L.push("- Termine com um resumo de no máximo 5 linhas.");
   L.push("");
   L.push("Pergunta: "+(S.pergunta.trim()||"(sem pergunta específica)"));
+  if(tema)L.push("Tema: "+tema+".");
   L.push("Jogo: "+j.nome+" ("+j.sub+")");
   if(j.k==="celta"&&S.sigFora!=null)L.push("Significador: "+CARTAS[S.sigFora].nome+". Foi escolhido de propósito para representar o consulente ou o assunto e fica sob a carta 1; não é carta sorteada.");
   L.push("Invertidas: "+metodo);
   if(S.corte)L.push("Corte: "+S.corte);
   L.push("");L.push("Cartas:");
   S.tiradas.forEach((t,i)=>{const c=CARTAS[t.id],p=j.pos[i];
-    L.push(`${i+1}. ${p[0]} (${p[1]}) — ${c.nome}, ${t.rev?"invertida":"na posição direita"}. Significado segundo Waite: ${t.rev?c.inv:c.dir}.`);});
+    const w=completo&&WAITE?WAITE[t.id]:null,ori=t.rev?"invertida":"de pé";
+    const cab=`${i+1}. ${p[0]} (${p[1]}) — ${c.nome}, ${t.rev?"invertida":"na posição direita"}.`;
+    if(!w){L.push(cab+` Significado segundo Waite: ${t.rev?c.inv:c.dir}.`);return;}
+    L.push(cab);
+    L.push("Texto de Waite sobre a carta: "+w.d.join(" "));
+    L.push("Significados divinatórios ("+ori+"): "+(t.rev?(w.r||cap(c.inv)+"."):(w.u||cap(c.dir)+".")));
+    const ad=t.rev?w.ar:w.a;if(ad)L.push("Significado adicional de Waite ("+ori+"): "+ad);
+    L.push("");});
   if(j.k==="celta"&&S.tiradas[9]){const c10=CARTAS[S.tiradas[9].id];if(!c10.maior&&c10.rank>10)L.push("Observação de Waite: a carta 10 é da corte, então o desfecho depende sobretudo da pessoa que ela representa.");}
   const v=veredito();if(v){L.push("");L.push("Sim/Não pela convenção do app: "+YN_TXT[v.res]+". "+v.det+" Avalie se as cartas sustentam esse resultado.");}
   if(S.fundo&&S.maco.length){const c=CARTAS[S.maco[S.maco.length-1].id];L.push("Carta do fundo do maço (contexto): "+c.nome+(S.maco[S.maco.length-1].rev&&S.inv==="real"?", invertida":"")+".");}
@@ -792,7 +845,12 @@ function htmlWaiteCorpo(id,rev){
   const w=WAITE&&WAITE[id];if(!w)return"";const c=CARTAS[id];
   const u=w.u||cap(c.dir)+".",r=w.r||cap(c.inv)+".";
   return w.d.map(x=>`<p>${esc(x)}</p>`).join("")+
-    `<p><b>Significados divinatórios${rev?"":" (como saiu)"}:</b> ${esc(u)}</p><p><b>Invertida${rev?" (como saiu)":""}:</b> ${esc(r)}</p>`;
+    `<p><b>Significados divinatórios${rev?"":" (como saiu)"}:</b> ${esc(u)}</p><p><b>Invertida${rev?" (como saiu)":""}:</b> ${esc(r)}</p>`+
+    (w.a?`<p><b>Significados adicionais:</b> De pé: ${esc(w.a)} ${w.ar?"Invertida: "+esc(w.ar):"Waite não dá adicional para a invertida."}</p><p class="w-aviso">Waite avisa que os adicionais têm pouca ligação com os desenhos e muitas vezes discordam dos significados principais.</p>`:"");
+}
+function atualizaPrompt(){
+  const t=textoPrompt();$("prompt").value=t;
+  $("prompt-tam").textContent="Tamanho do prompt: cerca de "+t.split(/\s+/).filter(Boolean).length+" palavras.";
 }
 
 /* ---------- render ---------- */
@@ -804,6 +862,7 @@ function render(){
   // jogos
   $("lista-jogos").innerHTML=JOGOS.map(x=>`<button type="button" class="chip" data-jogo="${x.k}" aria-pressed="${x.k===S.jogo}">${esc(x.nome)} <small>${esc(x.sub)}</small></button>`).join("");
   $("desc-jogo").textContent=j.desc;
+  $("tema").value=S.tema||"";$("opt-completo").checked=!!S.completo;$("lab-completo").classList.toggle("oculto",!WAITE);
   $("painel-sig").classList.toggle("oculto",j.k!=="celta");
   if(j.k==="celta"){
     $("sig").value=S.sig==null?"":String(S.sig);
@@ -896,7 +955,7 @@ function render(){
       fh+=`<div style="margin-top:6px">${corte10?"A carta 10 é da corte: para Waite, o desfecho fica nas mãos da pessoa que ela representa. Ele manda fazer nova tiragem com essa carta como significador.":"Se a carta 10 não deixar o desfecho claro, Waite manda repetir a tiragem com ela como significador."}</div><div><button class="btn" type="button" data-sig10="1" style="margin-top:4px">Nova tiragem com ${esc(c10.nome)} como significador</button></div>`;
     }
     $("fatos").innerHTML=fh;
-    $("prompt").value=textoPrompt();
+    atualizaPrompt();
     $("b-salvar").disabled=S.salvo;
     $("salvo").textContent=S.salvo?"Salva no diário.":"";
   }
@@ -920,16 +979,18 @@ document.addEventListener("click",e=>{
   if(b.dataset.zoom!=null){abrirZoom(+b.dataset.zoom);return;}
   if(b.dataset.virar!=null){const t=S.tiradas[+b.dataset.virar];if(t&&t.aberta){abrirZoom(+b.dataset.virar);return;}if(t&&!t.aberta){t.aberta=true;b.classList.add("aberta");b.setAttribute("aria-label",CARTAS[t.id].nome+(t.rev?", invertida":""));setTimeout(render,650);}return;}
 });
-$("pergunta").addEventListener("input",e=>{S.pergunta=e.target.value;if(!$("leitura").classList.contains("oculto"))$("prompt").value=textoPrompt();});
+$("pergunta").addEventListener("input",e=>{S.pergunta=e.target.value;if(!$("leitura").classList.contains("oculto"))atualizaPrompt();});
 $("opt-salto").addEventListener("change",e=>{S.salto=e.target.checked;render();});
 $("opt-fundo").addEventListener("change",e=>{S.fundo=e.target.checked;render();});
 $("opt-base").addEventListener("change",e=>{S.verBase=e.target.checked;render();});
-$("b-novo").addEventListener("click",()=>{const keep={jogo:S.jogo,pergunta:S.pergunta,inv:S.inv,prob:S.prob,salto:S.salto,fundo:S.fundo,corteModo:S.corteModo,divModo:S.divModo,tirarModo:S.tirarModo,sig:S.sig,sigLado:S.sigLado};S=Object.assign(estadoInicial(),keep);sincSig();render();});
+$("b-novo").addEventListener("click",()=>{const keep={jogo:S.jogo,pergunta:S.pergunta,tema:S.tema,completo:S.completo,inv:S.inv,prob:S.prob,salto:S.salto,fundo:S.fundo,corteModo:S.corteModo,divModo:S.divModo,tirarModo:S.tirarModo,sig:S.sig,sigLado:S.sigLado};S=Object.assign(estadoInicial(),keep);sincSig();render();});
 $("sig").addEventListener("change",e=>{
   const v=e.target.value;S.sig=v===""?null:+v;
   if(S.sig!=null)S.sigLado=OLHA[S.sig]||"esq";
   salvarSig();sincSig();render();
 });
+$("tema").addEventListener("change",e=>{S.tema=e.target.value;if(!$("leitura").classList.contains("oculto"))atualizaPrompt();});
+$("opt-completo").addEventListener("change",e=>{S.completo=e.target.checked;if(!$("leitura").classList.contains("oculto"))atualizaPrompt();});
 $("b-dividir").addEventListener("click",dividir);
 $("m1").addEventListener("input",ajustaMontesUI);
 $("m2").addEventListener("input",ajustaMontesUI);
@@ -999,7 +1060,7 @@ $("b-gemma-carregar").addEventListener("click",async()=>{
 });
 $("b-gemma-ler").addEventListener("click",async()=>{
   if(!llm)return;const out=$("gemma-saida"),st=$("gemma-status");
-  let p=textoPrompt();if($("opt-tpl").checked)p="<start_of_turn>user\n"+p+"<end_of_turn>\n<start_of_turn>model\n";
+  let p=textoPrompt(false);if($("opt-tpl").checked)p="<start_of_turn>user\n"+p+"<end_of_turn>\n<start_of_turn>model\n";
   out.textContent="";$("b-gemma-ler").disabled=true;st.textContent="Gemma está lendo…";
   try{await llm.generateResponse(p,(parcial,fim)=>{out.textContent+=parcial;if(fim)st.textContent="Leitura concluída.";});}
   catch(err){st.textContent="Falhou: "+(err&&err.message?err.message:String(err));}
@@ -1011,7 +1072,7 @@ let db=null,uid=null,colecao=null,diarioLocal=[];
 function lsGet(){try{return JSON.parse(localStorage.getItem("tarot-diario")||"[]");}catch(e){return[];}}
 function lsSet(a){try{localStorage.setItem("tarot-diario",JSON.stringify(a));return true;}catch(e){return false;}}
 function registroAtual(){const j=jogo();const v=veredito();
-  return{ts:Date.now(),jogo:j.k,pergunta:S.pergunta.trim(),inv:S.inv,corte:S.corte||"",yn:v?v.res:"",
+  return{ts:Date.now(),jogo:j.k,pergunta:S.pergunta.trim(),tema:S.tema||"",inv:S.inv,corte:S.corte||"",yn:v?v.res:"",
     cartas:S.tiradas.map((t,i)=>({id:t.id,rev:t.rev,pos:j.pos[i][0]})),
     sig:(j.k==="celta"&&S.sigFora!=null)?S.sigFora:null,
     extra:{fundo:S.fundo&&S.maco.length?S.maco[S.maco.length-1].id:null,saltos:S.saltos.map(s=>s.id)}};}
@@ -1021,7 +1082,7 @@ function renderDiario(lista){
   if(!lista.length){$("diario").innerHTML='<p class="vazio-txt">Nenhuma leitura salva ainda.</p>';return;}
   $("diario").innerHTML=lista.map(r=>{const j=JOGOS.find(x=>x.k===r.jogo)||{nome:r.jogo,sub:""};
     const d=new Date(r.ts);const data=d.toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"})+" · "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-    return `<details><summary>${esc(j.nome)} ${r.yn?`<span class="tag yn-${r.yn}">${YN_TXT[r.yn]}</span>`:""}<small>${esc(data)}${r.pergunta?" · "+esc(r.pergunta):""}</small></summary><ul>${(r.cartas||[]).map(c=>`<li>${esc(c.pos)}: <b>${esc(CARTAS[c.id].nome)}</b>${c.rev?" (invertida)":""}</li>`).join("")}</ul>${Number.isInteger(r.sig)&&CARTAS[r.sig]?`<p class="nota">Significador: ${esc(CARTAS[r.sig].nome)}</p>`:""}${r.corte?`<p class="nota">${esc(r.corte)}</p>`:""}</details>`;}).join("");
+    return `<details><summary>${esc(j.nome)} ${r.yn?`<span class="tag yn-${r.yn}">${YN_TXT[r.yn]}</span>`:""}<small>${esc(data)}${r.tema&&TEMAS[r.tema]?" · "+esc(TEMAS[r.tema]):""}${r.pergunta?" · "+esc(r.pergunta):""}</small></summary><ul>${(r.cartas||[]).map(c=>`<li>${esc(c.pos)}: <b>${esc(CARTAS[c.id].nome)}</b>${c.rev?" (invertida)":""}</li>`).join("")}</ul>${Number.isInteger(r.sig)&&CARTAS[r.sig]?`<p class="nota">Significador: ${esc(CARTAS[r.sig].nome)}</p>`:""}${r.corte?`<p class="nota">${esc(r.corte)}</p>`:""}</details>`;}).join("");
 }
 async function carregarDiario(){
   if(colecao){
