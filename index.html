@@ -192,13 +192,6 @@ footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;fon
         <button type="button" data-inv="off" id="inv-off">Sem invertidas</button>
       </div>
       <p class="nota" id="desc-inv"></p>
-      <label class="campo oculto" id="campo-prob" for="prob">Chance de cada carta sair invertida
-        <select id="prob">
-          <option value="0.25">25% (1 em 4)</option>
-          <option value="0.333">33% (1 em 3)</option>
-          <option value="0.5" selected>50% (moeda)</option>
-        </select>
-      </label>
     </div>
     <label class="toggle" for="opt-salto"><input type="checkbox" id="opt-salto">
       <span>Considerar cartas que saltam ao embaralhar<small>Algumas escolas leem a carta que “pula” do maço como recado extra. Fica fora da tiragem principal.</small></span></label>
@@ -236,6 +229,19 @@ footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;fon
     </div>
     <div id="painel-tres" style="display:grid;gap:10px">
       <p class="nota">Tradição: com a <b>mão esquerda</b>, pensando na pergunta, divida o maço em três montes para a esquerda e reúna-os numa ordem diferente. Toque nos montes na ordem em que quer reuni-los: o primeiro tocado fica por cima.</p>
+      <div class="seg" role="group" aria-label="Tamanho dos montes" style="grid-template-columns:repeat(2,1fr)">
+        <button type="button" data-div="acaso" id="div-acaso">Tamanhos ao acaso</button>
+        <button type="button" data-div="escolher" id="div-escolher">Escolher onde separar</button>
+      </div>
+      <div id="painel-div" class="oculto" style="display:grid;gap:8px">
+        <label class="campo" for="m1">Primeiro monte: <b id="m1-val" style="color:var(--ouro-2)">26</b> cartas
+          <input type="range" id="m1" min="8" max="62" value="26">
+        </label>
+        <label class="campo" for="m2">Segundo monte: <b id="m2-val" style="color:var(--ouro-2)">26</b> cartas
+          <input type="range" id="m2" min="8" max="62" value="26">
+        </label>
+        <p class="nota">Terceiro monte: <b id="m3-val">26</b> cartas (o que sobra).</p>
+      </div>
       <div class="linha"><button class="btn" type="button" id="b-dividir">Dividir em três montes</button></div>
       <div class="montes" id="montes"></div>
       <label class="toggle oculto" for="opt-base" id="lab-base"><input type="checkbox" id="opt-base"><span>Ver a carta de baixo de cada monte<small>Algumas escolas leem essas três como contexto da pergunta.</small></span></label>
@@ -350,7 +356,7 @@ footer{color:var(--nevoa);font-size:12.5px;text-align:center;margin-top:24px;fon
     </div>
   </div>
 
-  <footer>Imagens: baralho de 1909 de Pamela Colman Smith, domínio público (digitalização “Pam-A” restaurada por Steve P.). Significados-base: A. E. Waite, <i>The Pictorial Key to the Tarot</i> (1910), em palavras-chave resumidas. Aleatoriedade: gerador criptográfico do navegador.</footer>
+  <footer>Imagens: baralho de 1909 de Pamela Colman Smith, domínio público (digitalização “Pam-A” restaurada por Steve P.). Significados: A. E. Waite, <i>The Pictorial Key to the Tarot</i> (1910), traduzidos e condensados. Aleatoriedade: gerador criptográfico do navegador.</footer>
 </div>
 
 <script>
@@ -364,30 +370,30 @@ function binomial(n,p){let k=0;for(let i=0;i<n;i++)if(rand()<p)k++;return k;}
 /* ---------- baralho ---------- */
 const ROMANOS=["0","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX","XXI"];
 const VS="︎";
-// [nome, glifo, atribuição (Golden Dawn), direita, invertida, sim/não]
+// [nome, glifo, atribuição (Golden Dawn), direita (Waite), invertida (Waite), sim/não de pé + invertida]
 const MAIORES=[
-["O Louco","ar","Ar","início, salto de fé, espontaneidade, liberdade","imprudência, hesitação, risco mal calculado","S"],
-["O Mago","☿","Mercúrio","iniciativa, habilidade, recursos à mão, força de vontade","manipulação, talento mal usado, bloqueio para agir","S"],
-["A Sacerdotisa","☽","Lua","intuição, silêncio, conhecimento oculto, espera","segredos, intuição desligada, informação retida","T"],
-["A Imperatriz","♀","Vênus","fertilidade, abundância, cuidado, criação","estagnação criativa, dependência, zelo excessivo","S"],
-["O Imperador","♈","Áries","estrutura, autoridade, ordem, estabilidade","rigidez, controle excessivo, autoridade abalada","S"],
-["O Hierofante","♉","Touro","tradição, instituições, ensino, conformidade","quebra de convenções, dogma questionado, caminho próprio","S"],
-["Os Enamorados","♊","Gêmeos","união, escolha, valores alinhados, parceria","desarmonia, escolha adiada, valores em conflito","S"],
-["O Carro","♋","Câncer","determinação, vitória, direção, autocontrole","falta de direção, forças opostas, perda de controle","S"],
-["A Força","♌","Leão","coragem, domínio de si, paciência, compaixão","insegurança, impulso descontrolado, desgaste","S"],
-["O Eremita","♍","Virgem","introspecção, busca interior, prudência, orientação","isolamento, retraimento excessivo, recusa de conselho","T"],
-["A Roda da Fortuna","♃","Júpiter","ciclos, mudança, sorte, virada","revés, resistência à mudança, ciclo desfavorável","S"],
-["A Justiça","♎","Libra","equilíbrio, verdade, causa e efeito, decisão justa","injustiça, parcialidade, fuga da responsabilidade","T"],
-["O Enforcado","agua","Água","pausa, rendição, nova perspectiva, sacrifício","estagnação, sacrifício inútil, indecisão","T"],
-["A Morte","♏","Escorpião","fim de ciclo, transformação, transição","resistência ao fim, mudança arrastada","N"],
-["A Temperança","♐","Sagitário","moderação, equilíbrio, paciência, síntese","excesso, desequilíbrio, pressa","S"],
-["O Diabo","♑","Capricórnio","apego, compulsão, materialismo, amarras","libertação, rompimento de vínculo, consciência do vício","N"],
-["A Torre","♂","Marte","ruptura súbita, revelação, colapso de estruturas","crise adiada, medo da mudança, abalo interno","N"],
-["A Estrela","♒","Aquário","esperança, renovação, inspiração, serenidade","desânimo, falta de fé, desconexão","S"],
-["A Lua","♓","Peixes","ilusão, incerteza, medo, inconsciente","confusão se dissipando, esclarecimento gradual","T"],
-["O Sol","☉","Sol","sucesso, clareza, vitalidade, alegria","otimismo excessivo, sucesso adiado, brilho parcial","S"],
-["O Julgamento","fogo","Fogo","despertar, chamado, avaliação, renascimento","autocrítica dura, dúvida, chamado ignorado","S"],
-["O Mundo","♄","Saturno","conclusão, integração, realização, plenitude","pendência, ciclo incompleto, falta de fechamento","S"]
+["O Louco","ar","Ar","loucura, mania, extravagância, embriaguez, delírio, frenesi, revelação indiscreta","negligência, ausência, distribuição, descuido, apatia, nulidade, vaidade","NN"],
+["O Mago","☿","Mercúrio","habilidade, diplomacia, desenvoltura, sutileza; doença, dor, perda, desastre, armadilhas de inimigos; autoconfiança, vontade; o consulente, se homem","médico, mago, doença mental, desonra, inquietação","TN"],
+["A Sacerdotisa","☽","Lua","segredos, mistério, o futuro ainda não revelado; a mulher que interessa ao consulente, se homem, ou a própria consulente, se mulher; silêncio, tenacidade; sabedoria, ciência","paixão, ardor moral ou físico, presunção, conhecimento superficial","TN"],
+["A Imperatriz","♀","Vênus","fecundidade, ação, iniciativa, vida longa; o desconhecido, o clandestino; também dificuldade, dúvida, ignorância","luz, verdade, o desenredar de assuntos complicados, alegrias públicas; outra leitura: hesitação","SS"],
+["O Imperador","♈","Áries","estabilidade, poder, proteção, realização; uma pessoa importante; ajuda, razão, convicção; também autoridade e vontade","benevolência, compaixão, crédito; também confusão para os inimigos, obstrução, imaturidade","ST"],
+["O Hierofante","♉","Touro","casamento, aliança, cativeiro, servidão; outra leitura: misericórdia e bondade; inspiração; o homem a quem o consulente recorre","sociedade, bom entendimento, concórdia, bondade excessiva, fraqueza","TT"],
+["Os Enamorados","♊","Gêmeos","atração, amor, beleza, provações superadas","fracasso, planos insensatos; outra leitura: casamento frustrado e contrariedades de todo tipo","SN"],
+["O Carro","♋","Câncer","socorro, providência; também guerra, triunfo, presunção, vingança, problemas","tumulto, briga, disputa, litígio, derrota","SN"],
+["A Força","♌","Leão","poder, energia, ação, coragem, magnanimidade; também sucesso completo e honrarias","despotismo, abuso de poder, fraqueza, discórdia, às vezes até desonra","SN"],
+["O Eremita","♍","Virgem","prudência, circunspecção; também, e sobretudo, traição, dissimulação, velhacaria, corrupção","ocultação, disfarce, política, medo, cautela sem razão","NN"],
+["A Roda da Fortuna","♃","Júpiter","destino, fortuna, sucesso, elevação, sorte, felicidade","aumento, abundância, excesso","SS"],
+["A Justiça","♎","Libra","equidade, retidão, probidade, poder executivo; vitória do lado que merece, na justiça","a lei em todos os seus ramos, complicações legais, intolerância, parcialidade, severidade excessiva","TN"],
+["O Enforcado","agua","Água","sabedoria, circunspecção, discernimento, provações, sacrifício, intuição, adivinhação, profecia","egoísmo, a multidão, o corpo político","TN"],
+["A Morte","♏","Escorpião","fim, mortalidade, destruição, corrupção; para um homem, perda de um benfeitor; para uma mulher, muitas contrariedades; para uma moça, fracasso de planos de casamento","inércia, sono, letargia, petrificação, sonambulismo; esperança destruída","NN"],
+["A Temperança","♐","Sagitário","economia, moderação, frugalidade, administração, conciliação","assuntos de igrejas, religiões, seitas e sacerdócio, às vezes o padre que casará o consulente; também desunião, combinações infelizes, interesses em conflito","ST"],
+["O Diabo","♑","Capricórnio","devastação, violência, veemência, esforços extraordinários, força, fatalidade; o que está predestinado, mas nem por isso é mau","fatalidade maligna, fraqueza, mesquinhez, cegueira","NN"],
+["A Torre","♂","Marte","miséria, aflição, indigência, adversidade, calamidade, desonra, engano, ruína; sobretudo, catástrofe imprevista","segundo um relato, o mesmo em grau menor; também opressão, prisão, tirania","NN"],
+["A Estrela","♒","Aquário","perda, roubo, privação, abandono; outra leitura: esperança e perspectivas brilhantes","arrogância, altivez, impotência","TN"],
+["A Lua","♓","Peixes","inimigos ocultos, perigo, calúnia, escuridão, terror, engano, forças ocultas, erro","instabilidade, inconstância, silêncio, engano e erro em grau menor","NT"],
+["O Sol","☉","Sol","felicidade material, casamento afortunado, contentamento","o mesmo, em grau menor","SS"],
+["O Julgamento","fogo","Fogo","mudança de posição, renovação, desfecho; outra leitura: perda total num processo judicial","fraqueza, pusilanimidade, simplicidade; também deliberação, decisão, sentença","ST"],
+["O Mundo","♄","Saturno","sucesso garantido, recompensa, viagem, rota, emigração, fuga, mudança de lugar","inércia, fixidez, estagnação, permanência","SN"]
 ];
 const NAIPES=[
  {k:"paus",nome:"Paus",el:"Fogo",tema:"ação, energia, projetos",cor:"#b5532d"},
@@ -396,68 +402,68 @@ const NAIPES=[
  {k:"ouros",nome:"Ouros",el:"Terra",tema:"dinheiro, trabalho, corpo, matéria",cor:"#b08a2b"}
 ];
 const RANKS=["Ás","2","3","4","5","6","7","8","9","10","Valete","Cavaleiro","Rainha","Rei"];
-// [direita, invertida, sim/não] por naipe, na ordem de RANKS
+// [direita (Waite), invertida (Waite), sim/não de pé + invertida] por naipe, na ordem de RANKS
 const MENORES={
 paus:[
-["inspiração, novo projeto, energia criativa","atraso, falta de motivação, falso começo","S"],
-["planejamento, decisão, visão de futuro","medo do desconhecido, planejamento falho","T"],
-["expansão, perspectiva, resultados a caminho","obstáculos, atrasos, frustração com prazos","S"],
-["celebração, harmonia, lar, marco alcançado","transição instável, falta de apoio","S"],
-["conflito, competição, divergências","evitar conflito, trégua, tensão interna","N"],
-["vitória, reconhecimento público, progresso","falta de reconhecimento, queda, ego ferido","S"],
-["defesa, perseverança, manter posição","exaustão, desistência, sobrecarga","T"],
-["movimento rápido, notícias, ação","atrasos, frustração, pressa mal dirigida","S"],
-["resiliência, persistência, última prova","cansaço, desconfiança, rigidez defensiva","T"],
-["sobrecarga, responsabilidade, fardo","delegar, soltar o peso, esgotamento","N"],
-["entusiasmo, exploração, mensagem","ideias sem rumo, imaturidade, notícia atrasada","S"],
-["ação, aventura, impulsividade","pressa, imprudência, frustração","S"],
-["confiança, carisma, determinação","insegurança, ciúme, autoritarismo","S"],
-["liderança, visão, empreendedorismo","impulsividade, expectativa alta demais, prepotência","S"]],
+["criação, invenção, empreendimento e as forças que os produzem; princípio, começo, origem; nascimento, família, linhagem; ponto de partida; outra leitura: dinheiro, fortuna, herança","queda, decadência, ruína, perdição; também uma alegria nublada","SN"],
+["duas leituras inconciliáveis: riqueza, fortuna, magnificência; ou sofrimento físico, doença, desgosto, tristeza, mortificação, como a tristeza de Alexandre em meio à grandeza","surpresa, assombro, encantamento, emoção, perturbação, medo","TT"],
+["força estabelecida, empreendimento, esforço, comércio, descoberta; cooperação competente nos negócios","fim dos problemas, suspensão ou fim da adversidade, do esforço e da decepção","SS"],
+["vida no campo, refúgio, festa de colheita doméstica, repouso, concórdia, harmonia, prosperidade, paz e a obra realizada","o sentido não muda: prosperidade, aumento, felicidade, beleza, embelezamento","SS"],
+["imitação, como numa luta simulada; também competição árdua na busca de riqueza, a batalha da vida; por isso alguns a leem como ouro, ganho, opulência","litígio, disputas, trapaça, contradição","TN"],
+["vencedor triunfante; grandes notícias, como as levadas pelo mensageiro do rei; expectativa coroada, a coroa da esperança","apreensão, medo, como de um inimigo vitorioso à porta; traição, deslealdade; também adiamento indefinido","SN"],
+["valor em posição vantajosa contra muitos; discussão, disputa de palavras; nos negócios: negociação, guerra comercial, permuta, concorrência; também sucesso","perplexidade, embaraços, ansiedade; alerta contra a indecisão","SN"],
+["atividade nos empreendimentos, rapidez de mensageiro expresso; grande pressa, grande esperança, avanço rumo a uma felicidade garantida; o que está em movimento; também as flechas do amor","flechas do ciúme, disputa interna, remorso, brigas; brigas domésticas para casados","SN"],
+["força na oposição: enfrenta o ataque com ousadia, adversário temível; também atraso, suspensão, adiamento","obstáculos, adversidade, calamidade","TN"],
+["sobretudo opressão; também fortuna, ganho, sucesso, e então a opressão dessas coisas; falsa aparência, disfarce, perfídia; num processo, perda certa","contrariedades, dificuldades, intrigas e coisas semelhantes","NN"],
+["jovem moreno, fiel, amante, enviado, carteiro; dá testemunho favorável sobre o homem ao seu lado; rival perigoso se seguido pelo Valete de Copas; pode indicar notícias de família","anedotas, anúncios, más notícias; também indecisão e a instabilidade que a acompanha","SN"],
+["partida, ausência, fuga, emigração; jovem moreno, amigável; mudança de residência","ruptura, divisão, interrupção, discórdia","TN"],
+["mulher morena, do campo, amigável, casta, amorosa, honrada; bem-disposta com o consulente; também amor ao dinheiro ou certo sucesso nos negócios","boa, econômica, prestativa, útil; em certas posições e perto de cartas nesse sentido: oposição, ciúme, até engano e infidelidade","ST"],
+["homem moreno, amigável, do campo, geralmente casado, honesto e consciencioso; sempre indica honestidade; pode trazer notícia de uma herança inesperada em breve","bom, mas severo; austero, porém tolerante","ST"]],
 copas:[
-["amor novo, emoção aberta, intuição","emoções reprimidas, vazio, bloqueio afetivo","S"],
-["parceria, atração mútua, união","desequilíbrio na relação, rompimento, desencontro","S"],
-["amizade, celebração, comunidade","excessos, fofoca, isolamento social","S"],
-["apatia, contemplação, oportunidade ignorada","retomada de interesse, aceitação","T"],
-["perda, arrependimento, luto","aceitação, seguir em frente, perdão","N"],
-["nostalgia, memórias, reencontro","preso ao passado, idealização","S"],
-["fantasia, muitas opções, ilusão","clareza, escolha feita, foco","T"],
-["partida, desapego, busca de sentido","medo de partir, ficar por inércia","N"],
-["satisfação, desejo realizado","insatisfação, desejo frustrado","S"],
-["harmonia familiar, plenitude afetiva","conflito familiar, valores desalinhados","S"],
-["mensagem afetiva, sensibilidade, curiosidade","imaturidade emocional, bloqueio criativo","S"],
-["romance, proposta, charme","humor instável, promessas vazias","S"],
-["empatia, acolhimento, intuição","dependência emocional, insegurança","S"],
-["equilíbrio emocional, diplomacia","manipulação emocional, frieza, instabilidade","S"]],
+["casa do coração verdadeiro, alegria, contentamento, morada, nutrição, abundância, fertilidade; a Mesa Sagrada e sua felicidade","casa do coração falso, mudança, instabilidade, revolução","SN"],
+["amor, paixão, amizade, afinidade, união, concórdia, simpatia, a relação entre os sexos","luxúria, cobiça, ciúme, vontade, desejo","SN"],
+["conclusão de qualquer assunto em fartura, perfeição e alegria; desfecho feliz, vitória, realização, consolo, cura","rapidez, despacho, realização, fim; também o lado do excesso nos prazeres físicos e dos sentidos","ST"],
+["cansaço, desgosto, aversão, aborrecimentos imaginários, como se o vinho deste mundo só trouxesse saciedade; também prazer misturado","novidade, presságio, nova instrução, novas relações","NS"],
+["perda, mas algo resta: três se foram, duas ficam; herança, patrimônio, transmissão, mas abaixo do esperado; para alguns, casamento, mas não sem amargura ou frustração","notícias, alianças, afinidade, consanguinidade, ancestralidade, retorno, projetos falsos","NT"],
+["o passado e as lembranças, olhar para trás, como para a infância; felicidade que vem mais do passado; coisas que sumiram; outra leitura: novas relações, novo conhecimento, novo ambiente","o futuro, renovação, o que vai acontecer em breve","TS"],
+["favores de fada, imagens refletidas, sentimento, imaginação, coisas vistas no espelho da contemplação; alguma conquista nesse plano, mas nada permanente ou substancial","desejo, vontade, determinação, projeto","NS"],
+["na prática, o declínio de um assunto, ou algo tido como importante que tem pouca consequência, para o bem ou para o mal; outras leituras, opostas: alegria, brandura, timidez, honra, modéstia","grande alegria, felicidade, festa","NS"],
+["concórdia, contentamento, bem-estar físico; também vitória, sucesso, vantagem; satisfação para o consulente","verdade, lealdade, liberdade; mas as leituras variam e incluem enganos e imperfeições","ST"],
+["contentamento, repouso do coração inteiro e sua perfeição; perfeição do amor humano e da amizade; com várias figuras, alguém que cuida dos interesses do consulente; também a cidade ou região onde ele mora","repouso do coração falso, indignação, violência","SN"],
+["jovem loiro, disposto a prestar serviço, com quem o consulente se ligará; jovem estudioso; notícia, mensagem; aplicação, reflexão, meditação, também nos negócios","gosto, inclinação, apego, sedução, engano, artifício","SN"],
+["chegada, aproximação, às vezes de um mensageiro; avanços, proposta, conduta, convite, incitação","trapaça, artifício, sutileza, fraude, duplicidade","SN"],
+["mulher boa e loira, honesta, dedicada, que prestará serviço ao consulente; inteligência amorosa e, daí, o dom da visão; sucesso, felicidade, prazer; sabedoria, virtude; esposa perfeita e boa mãe","os relatos variam: mulher boa; ou mulher distinta, mas não confiável; mulher perversa; vício, desonra, depravação","ST"],
+["homem loiro, de negócios, do direito ou da religião; responsável, disposto a ajudar o consulente; equidade, arte e ciência; inteligência criativa","homem desonesto, de jogo duplo; velhacaria, extorsão, injustiça, vício, escândalo, pilhagem, perda considerável","SN"]],
 espadas:[
-["clareza, verdade, ideia decisiva","confusão, informação errada, brutalidade","S"],
-["impasse, decisão difícil, bloqueio","indecisão exposta, excesso de informação, alívio","T"],
-["dor, mágoa, separação","recuperação, perdão, liberar a dor","N"],
-["descanso, recuperação, pausa","esgotamento, inquietação, volta à ativa","T"],
-["conflito, vitória a qualquer custo, derrota","reconciliação, arrependimento, encerrar disputa","N"],
-["transição, afastamento, travessia","resistência à mudança, assunto pendente","T"],
-["estratégia, astúcia, engano","confissão, consciência pesada, ser descoberto","N"],
-["restrição, sentir-se preso, autolimitação","libertação, nova perspectiva, aceitar ajuda","N"],
-["ansiedade, preocupação, insônia","alívio, encarar o medo, esperança","N"],
-["fim doloroso, colapso, fundo do poço","recuperação, o pior já passou","N"],
-["curiosidade, vigilância, ideias novas","fofoca, palavras impensadas, desconfiança","T"],
-["ação rápida, ambição, franqueza","impulsividade, agressividade verbal, falta de plano","T"],
-["clareza, independência, juízo imparcial","frieza, amargura, crítica excessiva","T"],
-["autoridade intelectual, verdade, ética","abuso de poder, manipulação, crueldade","T"]],
+["triunfo, o grau excessivo em tudo, conquista, triunfo da força; carta de grande força, no amor e no ódio","o mesmo, mas com resultados desastrosos; outra leitura: concepção, parto, aumento, multiplicidade","SN"],
+["conformidade e o equilíbrio que ela sugere, coragem, amizade, concórdia em estado de armas; outra leitura: ternura, afeto, intimidade, com ressalvas, pois Espadas raramente indicam forças benéficas","impostura, falsidade, duplicidade, deslealdade","TN"],
+["afastamento, ausência, atraso, divisão, ruptura, dispersão, e tudo o que o desenho sugere","alienação mental, erro, perda, distração, desordem, confusão","NN"],
+["vigilância, retiro, solidão, repouso de eremita, exílio, túmulo e caixão","administração sábia, circunspecção, economia, avareza, precaução, testamento","NT"],
+["degradação, destruição, revogação, infâmia, desonra, perda","o mesmo; enterro e exéquias","NN"],
+["viagem por água, rota, caminho, enviado, comissário, expediente","declaração, confissão, publicidade; outra leitura: uma proposta de amor","TT"],
+["plano, tentativa, desejo, esperança, confiança; também briga, um plano que pode falhar, aborrecimento; sentidos muito divergentes","bom conselho, orientação, instrução, calúnia, falatório","TT"],
+["más notícias, desgosto violento, crise, censura, poder tolhido, conflito, calúnia; também doença","inquietação, dificuldade, oposição, acidente, traição; o imprevisto; fatalidade","NN"],
+["morte, fracasso, malogro, atraso, engano, decepção, desespero","prisão, suspeita, dúvida, medo fundado, vergonha","NN"],
+["o que o desenho sugere; também dor, aflição, lágrimas, tristeza, desolação; não é especialmente carta de morte violenta","vantagem, lucro, sucesso, favor, mas nada disso é permanente; também poder e autoridade","NT"],
+["autoridade, supervisão, serviço secreto, vigilância, espionagem, exame e as qualidades ligadas a isso","o lado pior dessas qualidades; o imprevisto, despreparo; também indica doença","TN"],
+["habilidade, bravura, capacidade, defesa, destreza, inimizade, ira, guerra, destruição, oposição, resistência, ruína; perto de cartas de fatalidade, pode indicar morte","imprudência, incapacidade, extravagância","TN"],
+["viuvez, tristeza e embaraço femininos, ausência, esterilidade, luto, privação, separação","malícia, intolerância, artifício, puritanismo, infortúnio, engano","NN"],
+["tudo o que vem da ideia de julgamento: poder, comando, autoridade, inteligência combativa, a lei, cargos do Estado","crueldade, perversidade, barbárie, perfídia, má intenção","TN"]],
 ouros:[
-["oportunidade material, prosperidade, começo financeiro","oportunidade perdida, má gestão","S"],
-["equilíbrio, adaptação, prioridades","desorganização, sobrecarga financeira","T"],
-["trabalho em equipe, competência, colaboração","falta de cooperação, qualidade baixa","S"],
-["segurança, conservação, controle","avareza, apego material, medo de perder","T"],
-["dificuldade financeira, exclusão, carência","recuperação, ajuda chegando, superação","N"],
-["generosidade, troca, dar e receber","dívida, desigualdade, ajuda com condições","S"],
-["paciência, investimento de longo prazo, avaliação","impaciência, retorno baixo, esforço mal aplicado","T"],
-["dedicação, aprendizado, ofício","perfeccionismo, falta de foco, trabalho repetitivo","S"],
-["independência, conforto, autossuficiência","dependência financeira, gastos excessivos","S"],
-["riqueza duradoura, família, legado","perda financeira, conflito por herança","S"],
-["estudo, oportunidade concreta, planejamento","procrastinação, falta de progresso","S"],
-["constância, método, rotina","tédio, estagnação, teimosia","S"],
-["cuidado prático, prosperidade, segurança","desequilíbrio entre trabalho e casa, preocupação material","S"],
-["riqueza, estabilidade, gestão sólida","materialismo, rigidez, controle financeiro excessivo","S"]]
+["contentamento perfeito, felicidade, êxtase; também notícias rápidas; ouro","o lado mau da riqueza, más notícias; também grandes riquezas; indica prosperidade, mas se ela faz bem a quem a tem depende de a carta sair invertida ou não","ST"],
+["alegria, recreação; também notícias e mensagens escritas, obstáculos, agitação, problema, confusão","alegria forçada, prazer simulado, sentido literal, caligrafia, composição, letras de câmbio","TN"],
+["ofício, comércio, trabalho qualificado; mas geralmente lida como nobreza, aristocracia, renome, glória","mediocridade, no trabalho e fora dele; infantilidade, mesquinhez, fraqueza","SN"],
+["segurança das posses, apego ao que se tem, presente, legado, herança","suspense, atraso, oposição","SN"],
+["acima de tudo, problemas materiais, como a miséria do desenho ou outros; para alguns cartomantes, carta de amor e amantes, concordância, afinidades; leituras inconciliáveis","desordem, caos, ruína, discórdia, libertinagem","NN"],
+["presentes, dádivas, gratificação; outra leitura: atenção, vigilância, a hora é agora, prosperidade presente","desejo, cobiça, inveja, ciúme, ilusão","SN"],
+["leituras muito contraditórias: no geral, dinheiro, negócios, permuta; uma leitura dá altercação e brigas; outra, inocência, engenho, purificação","motivo de preocupação com dinheiro que se pensa emprestar","TN"],
+["trabalho, emprego, encomenda, ofício, habilidade no ofício e nos negócios, talvez ainda em fase preparatória","ambição frustrada, vaidade, cobiça, extorsão, usura; também habilidade voltada à astúcia e à intriga","SN"],
+["prudência, segurança, sucesso, realização, certeza, discernimento","velhacaria, engano, projeto frustrado, má-fé","SN"],
+["ganho, riqueza; assuntos de família, arquivos, linhagem, a casa de uma família","acaso, fatalidade, perda, roubo, jogos de azar; às vezes presente, dote, pensão","SN"],
+["aplicação, estudo, erudição, reflexão; outra leitura: notícias, mensagens e quem as traz; também regra, administração","prodigalidade, dissipação, liberalidade, luxo; notícias desfavoráveis","SN"],
+["utilidade, prestatividade, interesse, responsabilidade, retidão, tudo no plano normal e exterior","inércia, ociosidade, repouso desse tipo, estagnação; também placidez, desânimo, descuido","SN"],
+["opulência, generosidade, magnificência, segurança, liberdade","mal, suspeita, suspense, medo, desconfiança","SN"],
+["valor, inteligência realizadora, aptidão para negócios e intelecto, às vezes dom matemático; sucesso nesses caminhos","vício, fraqueza, feiura, perversidade, corrupção, perigo","SN"]]
 };
 const CARTAS=[];
 MAIORES.forEach((m,i)=>CARTAS.push({id:i,nome:m[0],maior:true,num:i,glifo:m[1],attr:m[2],dir:m[3],inv:m[4],yn:m[5]}));
@@ -467,7 +473,7 @@ NAIPES.forEach(n=>{RANKS.forEach((r,j)=>{const d=MENORES[n.k][j];
 
 /* ---------- jogos ---------- */
 const JOGOS=[
- {k:"sn1",nome:"Sim ou Não",sub:"1 carta",cols:1,rows:1,sn:true,desc:"Uma carta responde. Convenção usada: cada carta tem tendência Sim, Não ou Talvez; invertida, um Sim vira Não.",pos:[["Resposta","tendência da resposta",1,1]]},
+ {k:"sn1",nome:"Sim ou Não",sub:"1 carta",cols:1,rows:1,sn:true,desc:"Uma carta responde. Waite não define sim ou não; a tendência de cada carta, de pé ou invertida, é uma convenção do app tirada dos significados dele.",pos:[["Resposta","tendência da resposta",1,1]]},
  {k:"sn3",nome:"Sim ou Não",sub:"3 cartas",cols:3,rows:1,sn:true,desc:"Três cartas votam: Sim soma 1, Não subtrai 1, Talvez vale 0. O saldo decide; empate fica indefinido.",pos:[["Carta 1","primeiro voto",1,1],["Carta 2","segundo voto",2,1],["Carta 3","terceiro voto",3,1]]},
  {k:"dia",nome:"Conselho do dia",sub:"1 carta",cols:1,rows:1,desc:"Uma carta como orientação para o dia: o tom a adotar e onde pôr atenção.",pos:[["Conselho do dia","a atitude que a carta sugere para hoje",1,1]]},
  {k:"amor",nome:"Conselho amoroso",sub:"5 cartas",cols:3,rows:3,desc:"Para uma relação existente ou desejada. Sem uma pessoa específica, leia a posição 2 como “o que você busca”.",pos:[["Você","sua postura e o que traz para o vínculo",1,1],["A dinâmica","como a relação funciona hoje",2,1],["A outra pessoa","a postura dela ou o que você busca",3,1],["O que bloqueia","o principal obstáculo",2,2],["Conselho","a atitude recomendada",2,3]]},
@@ -484,7 +490,7 @@ let S=null;
 function estadoInicial(){return{
   jogo:"aberto",pergunta:"",inv:"real",prob:0.5,salto:false,fundo:false,
   maco:novoMaco(),emb:{overhand:0,riffle:0,mesa:0},reg:["Maço novo, na ordem de fábrica, todas as cartas de pé."],saltos:[],
-  corteModo:"tres",montes:null,ordemMontes:[],corte:null,cartaCorte:null,verBase:false,
+  corteModo:"tres",divModo:"acaso",montes:null,ordemMontes:[],corte:null,cartaCorte:null,verBase:false,
   tirarModo:"topo",tiradas:[],rodada:1,salvo:false,bases:null
 };}
 
@@ -513,10 +519,23 @@ function embaralhar(tipo){
 /* ---------- corte ---------- */
 function dividir(){
   if(S.tiradas.length)recolher(true);
-  const n=S.maco.length,t=Math.round(n/3);
-  const a=t+randInt(7)-3,b=t+randInt(7)-3;
+  const n=S.maco.length;let a,b;
+  if(S.divModo==="escolher"){ajustaMontesUI();a=+$("m1").value;b=+$("m2").value;}
+  else if(n<30){a=Math.round(n/3);b=a;}
+  else{
+    // dois pontos de corte sorteados; cada monte com pelo menos 8 cartas
+    for(;;){const x=1+randInt(n-1),y=1+randInt(n-1);if(x===y)continue;
+      const lo=Math.min(x,y),hi=Math.max(x,y);
+      if(lo>=8&&hi-lo>=8&&n-hi>=8){a=lo;b=hi-lo;break;}}
+  }
   S.montes=[S.maco.slice(0,a),S.maco.slice(a,a+b),S.maco.slice(a+b)];
   S.ordemMontes=[];S.corte=null;render();
+}
+function ajustaMontesUI(){
+  const n=S.maco.length,m1=$("m1"),m2=$("m2");
+  m1.max=String(Math.max(8,n-16));if(+m1.value>+m1.max)m1.value=m1.max;
+  m2.max=String(Math.max(8,n-(+m1.value)-8));if(+m2.value>+m2.max)m2.value=m2.max;
+  $("m1-val").textContent=m1.value;$("m2-val").textContent=m2.value;$("m3-val").textContent=String(n-(+m1.value)-(+m2.value));
 }
 function tocarMonte(i){
   if(!S.montes||S.ordemMontes.includes(i))return;
@@ -542,7 +561,7 @@ function cortarEm(c){
 
 /* ---------- tirar ---------- */
 function jogo(){return JOGOS.find(j=>j.k===S.jogo);}
-function orientar(c){if(S.inv==="off")return false;if(S.inv==="carta")return rand()<S.prob;return c.rev;}
+function orientar(c){if(S.inv==="off")return false;if(S.inv==="carta")return rand()<0.5;return c.rev;}
 function distribuir(){
   const j=jogo();if(S.tiradas.length)return;
   for(let i=0;i<j.pos.length;i++){const c=S.maco.shift();S.tiradas.push({id:c.id,rev:orientar(c),fis:c.rev,aberta:false});}
@@ -624,7 +643,7 @@ function htmlCarta(t,opts={}){
 
 /* ---------- leitura ---------- */
 const YN_TXT={S:"Sim",N:"Não",T:"Talvez"};
-function ynCarta(t){const b=CARTAS[t.id].yn;if(t.rev&&b==="S")return"N";return b;}
+function ynCarta(t){return CARTAS[t.id].yn[t.rev?1:0];}
 function veredito(){
   const j=jogo();if(!j.sn)return null;
   const vs=S.tiradas.map(ynCarta);
@@ -651,11 +670,12 @@ function fatos(){
 }
 function textoPrompt(){
   const j=jogo();
-  const metodo={real:"como na mesa (invertidas surgem de metades giradas e da mistura na mesa)",carta:"sorteio independente por carta ("+Math.round(S.prob*100)+"%)",off:"sem invertidas"}[S.inv];
+  const metodo={real:"como na mesa (invertidas surgem de metades giradas e da mistura na mesa)",carta:"sorteio independente por carta, 50% (moeda)",off:"sem invertidas"}[S.inv];
   const L=[];
   L.push("Você é um leitor de tarô Rider-Waite. Interprete a tiragem abaixo com rigor técnico.");
   L.push("Regras:");
-  L.push("- Base: significados tradicionais de A. E. Waite (The Pictorial Key to the Tarot). Diga quando estiver indo além deles.");
+  L.push("- Base: significados divinatórios de A. E. Waite (The Pictorial Key to the Tarot, 1910). Diga quando estiver indo além deles.");
+  L.push("- Waite muitas vezes lista leituras alternativas ou contraditórias para a mesma carta: diga qual se aplica à posição e por quê.");
   L.push("- Leia carta por carta, sempre em função da posição.");
   L.push("- Separe: significado tradicional / leitura provável na posição / hipóteses.");
   L.push("- Evite frases genéricas que serviriam para qualquer pessoa, não force coerência entre as cartas e não use linguagem de elogio nem de alarme.");
@@ -668,7 +688,7 @@ function textoPrompt(){
   if(S.corte)L.push("Corte: "+S.corte);
   L.push("");L.push("Cartas:");
   S.tiradas.forEach((t,i)=>{const c=CARTAS[t.id],p=j.pos[i];
-    L.push(`${i+1}. ${p[0]} (${p[1]}) — ${c.nome}, ${t.rev?"invertida":"na posição direita"}. Palavras-chave tradicionais: ${t.rev?c.inv:c.dir}.`);});
+    L.push(`${i+1}. ${p[0]} (${p[1]}) — ${c.nome}, ${t.rev?"invertida":"na posição direita"}. Significado segundo Waite: ${t.rev?c.inv:c.dir}.`);});
   const v=veredito();if(v){L.push("");L.push("Sim/Não pela convenção do app: "+YN_TXT[v.res]+". "+v.det+" Avalie se as cartas sustentam esse resultado.");}
   if(S.fundo&&S.maco.length){const c=CARTAS[S.maco[S.maco.length-1].id];L.push("Carta do fundo do maço (contexto): "+c.nome+(S.maco[S.maco.length-1].rev&&S.inv==="real"?", invertida":"")+".");}
   if(S.bases&&S.verBase)L.push("Cartas de baixo dos três montes do corte (contexto): "+S.bases.map(b=>CARTAS[b.id].nome).join("; ")+".");
@@ -682,14 +702,13 @@ function $(id){return document.getElementById(id);}
 function medidaCarta(cols,fator){const w=Math.min(760,document.documentElement.clientWidth)-80;const g=fator?fator:0;const cw=g?Math.floor(w/(cols+g*(cols-1))):Math.floor((w-(cols-1)*10)/cols);return Math.max(46,Math.min(112,cw));}
 function render(){
   const j=jogo();
+  setTimeout(salvarMaco,0);
   // jogos
   $("lista-jogos").innerHTML=JOGOS.map(x=>`<button type="button" class="chip" data-jogo="${x.k}" aria-pressed="${x.k===S.jogo}">${esc(x.nome)} <small>${esc(x.sub)}</small></button>`).join("");
   $("desc-jogo").textContent=j.desc;
   if($("pergunta").value!==S.pergunta)$("pergunta").value=S.pergunta;
   document.querySelectorAll("[data-inv]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.inv===S.inv));
-  $("desc-inv").innerHTML={real:"Como num baralho físico: as cartas começam de pé e só se invertem quando uma metade é girada no riffle ou quando o maço é espalhado na mesa. A orientação acompanha a carta entre leituras.",carta:"Cada carta tirada tem a chance escolhida de sair invertida, independente das outras.",off:"Todas as cartas são lidas na posição direita."}[S.inv];
-  $("campo-prob").classList.toggle("oculto",S.inv!=="carta");
-  $("prob").value=String(S.prob);
+  $("desc-inv").innerHTML={real:"Como num baralho físico: uma carta só se inverte quando a metade do maço em que ela está é girada no riffle, ou quando o maço é espalhado na mesa. O maço fica guardado do jeito que estava entre uma leitura e outra, como um baralho de verdade.",carta:"Cada carta tirada tem 50% de chance de sair invertida, como jogar uma moeda, independente das outras. A quantidade de invertidas muda ao acaso a cada leitura.",off:"Todas as cartas são lidas na posição direita."}[S.inv];
   $("opt-salto").checked=S.salto;$("opt-fundo").checked=S.fundo;
   // maço
   const tot=S.emb.overhand+S.emb.riffle+S.emb.mesa;
@@ -697,16 +716,18 @@ function render(){
   $("selo-cartas").textContent=S.maco.length+" cartas no maço";
   const est=$("selo-estado");
   if(tot===0){est.textContent="ainda não embaralhado";est.className="selo alerta";}
-  else if(S.emb.riffle>=7||S.emb.mesa>=1){est.textContent="bem misturado";est.className="selo bom";}
+  else if(S.emb.riffle>=8||S.emb.mesa>=1){est.textContent="bem misturado";est.className="selo bom";}
   else{est.textContent=tot+" embaralhada"+(tot>1?"s":"");est.className="selo";}
   $("registro").innerHTML=S.reg.map(r=>`<div>${esc(r)}</div>`).join("");
   ["overhand","riffle","mesa"].forEach(k=>{$("c-"+k).textContent=S.emb[k]+"×";});
-  $("dica-emb").innerHTML="Pela matemática do embaralhamento (Bayer e Diaconis, 1992), cerca de <b>7 riffles</b> deixam o maço bem misturado; o “por cima da mão” mistura bem menos por vez. Espalhar na mesa mistura tudo de uma vez.";
+  $("dica-emb").innerHTML="Pelo cálculo de Bayer e Diaconis (1992), um maço de 78 cartas precisa de cerca de <b>8 riffles</b> para ficar bem misturado (os famosos 7 valem para 52 cartas). O “por cima da mão” mistura muito pouco por vez. Espalhar na mesa equivale a cerca de um minuto lavando as cartas, o que já deixa o maço aleatório.";
   $("ok-maco").textContent=tot?"✓":"";
   $("saltos").classList.toggle("oculto",!S.saltos.length);
   $("saltos-lista").innerHTML=S.saltos.map(s=>`<figure>${htmlCarta({id:s.id,rev:S.inv==="real"&&s.rev,aberta:true})}<figcaption>${esc(CARTAS[s.id].nome)}</figcaption></figure>`).join("");
   // corte
   document.querySelectorAll("[data-corte]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.corte===S.corteModo));
+  document.querySelectorAll("[data-div]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.div===S.divModo));
+  $("painel-div").classList.toggle("oculto",S.divModo!=="escolher");ajustaMontesUI();
   $("painel-tres").classList.toggle("oculto",S.corteModo!=="tres");
   $("painel-unico").classList.toggle("oculto",S.corteModo!=="unico");
   if(S.montes){
@@ -750,7 +771,7 @@ function render(){
   $("leitura-vazia").classList.toggle("oculto",todas);
   if(todas){
     const v=veredito();
-    $("veredito").innerHTML=v?`<div class="veredito ${{S:"sim",N:"nao",T:"talvez"}[v.res]}"><span class="pos" style="font-size:12.5px;color:var(--nevoa);letter-spacing:.04em;text-transform:uppercase">Resposta pela convenção</span><span class="grande">${v.res==="T"?(j.k==="sn3"?"Indefinido":"Talvez"):YN_TXT[v.res]}</span><span class="nota">${esc(v.det)} Tendência de cada carta é convenção de leitura, não regra de Waite.</span></div>`:"";
+    $("veredito").innerHTML=v?`<div class="veredito ${{S:"sim",N:"nao",T:"talvez"}[v.res]}"><span class="pos" style="font-size:12.5px;color:var(--nevoa);letter-spacing:.04em;text-transform:uppercase">Resposta pela convenção</span><span class="grande">${v.res==="T"?(j.k==="sn3"?"Indefinido":"Talvez"):YN_TXT[v.res]}</span><span class="nota">${esc(v.det)} Waite não define sim ou não: a tendência de cada carta é uma convenção do app, tirada dos significados dele.</span></div>`:"";
     $("itens").innerHTML=S.tiradas.map((t,i)=>{const c=CARTAS[t.id],p=j.pos[i];
       return `<div class="item">${htmlCarta(t,{aberta:true,zoom:i})}<div><div class="pos">${i+1} · ${esc(p[0])}</div><h3>${esc(c.nome)} <span class="tag ${t.rev?"inv":"dir"}">${t.rev?"invertida":"direita"}</span>${j.sn?` <span class="tag yn-${ynCarta(t)}">${YN_TXT[ynCarta(t)]}</span>`:""}</h3><p>${esc(t.rev?c.inv:c.dir)}.</p><p class="desc-pos">Na posição: ${esc(p[1])}.${c.maior?" "+esc(c.attr)+" (Golden Dawn).":" "+esc(NAIPES.find(x=>x.k===c.naipe).el)+"."}</p></div></div>`;}).join("");
     let fh="<h3>Fatos da tiragem</h3>"+fatos().map(x=>`<div>${x}</div>`).join("");
@@ -772,6 +793,7 @@ document.addEventListener("click",e=>{
   if(b.dataset.inv){S.inv=b.dataset.inv;render();return;}
   if(b.dataset.emb){embaralhar(b.dataset.emb);return;}
   if(b.dataset.corte){S.corteModo=b.dataset.corte;render();return;}
+  if(b.dataset.div){S.divModo=b.dataset.div;render();return;}
   if(b.dataset.monte!=null){tocarMonte(+b.dataset.monte);return;}
   if(b.dataset.tirar){if(!S.tiradas.length)S.tirarModo=b.dataset.tirar;render();return;}
   if(b.dataset.leque!=null){escolherLeque(+b.dataset.leque);return;}
@@ -779,15 +801,16 @@ document.addEventListener("click",e=>{
   if(b.dataset.virar!=null){const t=S.tiradas[+b.dataset.virar];if(t&&t.aberta){abrirZoom(+b.dataset.virar);return;}if(t&&!t.aberta){t.aberta=true;b.classList.add("aberta");b.setAttribute("aria-label",CARTAS[t.id].nome+(t.rev?", invertida":""));setTimeout(render,650);}return;}
 });
 $("pergunta").addEventListener("input",e=>{S.pergunta=e.target.value;if(!$("leitura").classList.contains("oculto"))$("prompt").value=textoPrompt();});
-$("prob").addEventListener("change",e=>{S.prob=parseFloat(e.target.value);render();});
 $("opt-salto").addEventListener("change",e=>{S.salto=e.target.checked;render();});
 $("opt-fundo").addEventListener("change",e=>{S.fundo=e.target.checked;render();});
 $("opt-base").addEventListener("change",e=>{S.verBase=e.target.checked;render();});
-$("b-novo").addEventListener("click",()=>{const keep={jogo:S.jogo,pergunta:S.pergunta,inv:S.inv,prob:S.prob,salto:S.salto,fundo:S.fundo,corteModo:S.corteModo,tirarModo:S.tirarModo};S=Object.assign(estadoInicial(),keep);render();});
+$("b-novo").addEventListener("click",()=>{const keep={jogo:S.jogo,pergunta:S.pergunta,inv:S.inv,prob:S.prob,salto:S.salto,fundo:S.fundo,corteModo:S.corteModo,divModo:S.divModo,tirarModo:S.tirarModo};S=Object.assign(estadoInicial(),keep);render();});
 $("b-dividir").addEventListener("click",dividir);
+$("m1").addEventListener("input",ajustaMontesUI);
+$("m2").addEventListener("input",ajustaMontesUI);
 $("ponto").addEventListener("input",e=>{$("ponto-val").textContent=e.target.value;});
 $("b-cortar").addEventListener("click",()=>cortarEm(parseInt($("ponto").value,10)));
-$("b-cortar-acaso").addEventListener("click",()=>{const n=S.maco.length;cortarEm(Math.round(n/2)+binomial(20,.5)-10);});
+$("b-cortar-acaso").addEventListener("click",()=>{const n=S.maco.length;cortarEm(n<20?Math.round(n/2):8+randInt(n-15));});
 $("b-distribuir").addEventListener("click",distribuir);
 $("b-revelar").addEventListener("click",()=>{S.tiradas.forEach(t=>t.aberta=true);document.querySelectorAll("#mesa .carta").forEach(el=>el.classList.add("aberta"));setTimeout(render,650);});
 $("b-recolher").addEventListener("click",()=>{recolher(false);$("s-maco").scrollIntoView({behavior:"smooth",block:"start"});});
@@ -919,8 +942,22 @@ $("b-apagar-sim").addEventListener("click",()=>{
 });
 
 /* ---------- início ---------- */
+function macoSalvo(){
+  try{const a=JSON.parse(localStorage.getItem("tarot-maco")||"null");
+    if(Array.isArray(a)&&a.length===78&&a.every(x=>x&&Number.isInteger(x.id)&&x.id>=0&&x.id<78)&&new Set(a.map(x=>x.id)).size===78)
+      return a.map(x=>({id:x.id,rev:!!x.rev}));}catch(e){}
+  return null;
+}
+function salvarMaco(){
+  // guarda o maço como ficaria recolhido: cartas da mesa por cima, como estavam fisicamente
+  try{const todo=S.tiradas.map(t=>({id:t.id,rev:t.fis})).concat(S.saltos,S.maco);
+    if(todo.length===78)localStorage.setItem("tarot-maco",JSON.stringify(todo.map(x=>({id:x.id,rev:x.rev?1:0}))));}catch(e){}
+}
 function start(dados){
-  S=Object.assign(estadoInicial(),dados&&dados.S?dados.S:{});
+  const temHot=!!(dados&&dados.S);
+  S=Object.assign(estadoInicial(),temHot?dados.S:{});
+  S.prob=0.5;if(!S.divModo)S.divModo="acaso";
+  if(!temHot){const m=macoSalvo();if(m){S.maco=m;S.reg=["Maço do jeito que ficou na última leitura."];}}
   render();renderDiario(lsGet());
 }
 try{const hot=window.claude&&window.claude.hot;if(hot&&hot.snapshot)hot.snapshot(()=>({S}));
